@@ -1,17 +1,6 @@
 import { useState } from "react";
 import BackgroundDecor from "./BackgroundDecor";
 
-/**
- * Pixel-accurate login screen, designed against a 1920×1080 canvas.
- *
- * The canvas width is computed as `min(100vw, 177.78vh)`, which locks the
- * true 1920:1080 ratio at all times, so cqw/cqh always scale identically
- * and nothing distorts.
- *
- * SETUP: copy these 2 files into your project's /public folder:
- *   bunny.png, info-ring.png
- * (background is a solid CSS color, so background.png is not needed)
- */
 export default function LoginPage() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -29,13 +18,12 @@ export default function LoginPage() {
   return (
     <div className="relative w-screen h-screen overflow-hidden bg-[#F9FBCA]">
       <BackgroundDecor />
-      {/* ===========================
-            Viewport Layer
-         =========================== */}
 
-      {/* Info Button */}
+      {/* ===========================
+            Info Button — desktop/tablet only
+         =========================== */}
       <div
-        className="absolute z-50"
+        className="absolute z-50 hidden md:block"
         style={{
           top: "40px",
           right: "40px",
@@ -62,11 +50,11 @@ export default function LoginPage() {
       </div>
 
       {/* ===========================
-            1920x1080 Design Canvas
+            1920x1080 Design Canvas — desktop/tablet (md and up)
          =========================== */}
 
       <div
-        className="absolute left-1/2 top-1/2"
+        className="absolute left-1/2 top-1/2 hidden md:block"
         style={{
           width: "min(100vw,177.777vh)",
           aspectRatio: "1920 / 1080",
@@ -214,6 +202,98 @@ export default function LoginPage() {
           >
             Sign Up
           </a>
+        </form>
+      </div>
+
+      {/* ===========================
+            Mobile layout (below md) — fixed, comfortable sizing,
+            no cqw/cqh scaling, no info icon
+         =========================== */}
+
+      <div className="flex md:hidden relative z-10 flex-col items-center justify-center w-full h-full px-6 py-8 gap-4">
+        <form
+          onSubmit={handleSubmit}
+          className="w-full max-w-sm bg-[#FAF9F0] shadow-lg box-border"
+          style={{
+            border: "6px solid #723D46",
+            borderRadius: "20px",
+            padding: "24px 20px",
+          }}
+        >
+          <h1
+            className="text-center font-normal m-0 mb-5"
+            style={{ fontFamily: "'Londrina Shadow', cursive", fontSize: "36px", color: "#000000" }}
+          >
+            LOGIN
+          </h1>
+
+          <label
+            htmlFor="email-mobile"
+            className="block text-gray-800 mb-1"
+            style={{ fontFamily: "'Inria Sans', sans-serif", fontSize: "16px" }}
+          >
+            Email
+          </label>
+          <input
+            id="email-mobile"
+            type="email"
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
+            className="w-full rounded-full bg-white border border-gray-200 outline-none focus:ring-2 focus:ring-[#A3D9A5] transition box-border mb-4"
+            style={{ height: "44px", padding: "0 18px", fontSize: "16px" }}
+          />
+
+          <label
+            htmlFor="password-mobile"
+            className="block text-gray-800 mb-1"
+            style={{ fontFamily: "'Inria Sans', sans-serif", fontSize: "16px" }}
+          >
+            Password
+          </label>
+          <input
+            id="password-mobile"
+            type="password"
+            value={password}
+            onChange={(e) => setPassword(e.target.value)}
+            className="w-full rounded-full bg-white border border-gray-200 outline-none focus:ring-2 focus:ring-[#A3D9A5] transition box-border mb-6"
+            style={{ height: "44px", padding: "0 18px", fontSize: "16px" }}
+          />
+
+          <button
+            type="submit"
+            className="flex items-center justify-center mx-auto transition-transform duration-100 active:scale-95"
+            style={{
+              width: "70%",
+              height: "48px",
+              backgroundColor: "#65FF65",
+              border: "2px solid #FFFFFF",
+              borderRadius: "24px",
+              boxShadow: "0 2px 6px rgba(0,0,0,0.15)",
+            }}
+          >
+            <span
+              className="text-white"
+              style={{ fontFamily: "'Londrina Solid', cursive", fontSize: "18px", lineHeight: 1, pointerEvents: "none" }}
+            >
+              Submit
+            </span>
+          </button>
+
+          <div className="text-center mt-4">
+            <p
+              className="text-gray-700 underline underline-offset-2 m-0"
+              style={{ fontFamily: "'Inria Sans', sans-serif", fontSize: "14px" }}
+            >
+              New Here !
+            </p>
+            <a
+              href="/signup"
+              className="font-bold text-gray-800 underline underline-offset-2 hover:text-[#3A2A2E]"
+              style={{ fontFamily: "'Inria Sans', sans-serif", fontSize: "16px" }}
+            >
+              Sign Up
+            </a>
+          </div>
         </form>
       </div>
     </div>
