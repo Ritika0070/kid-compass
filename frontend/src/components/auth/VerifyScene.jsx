@@ -1,20 +1,19 @@
 import { useState } from "react";
 import { motion } from "framer-motion";
-import OTPInput from "./OTPInput";
+import OTPInput from "../shared/OTPInput";
+import { useAuth } from "../../hooks/useAuth";
 
 const EASE_IN_ACCEL = [0.55, 0.055, 0.675, 0.19];
 const EASE_OUT_CUBIC = [0.33, 1, 0.68, 1];
 
-// Verify only ever enters from Sign Up (slide in from the left, confident,
-// staggered 50ms after Sign Up starts dropping out) and only ever exits
-// toward Login (slide back out to the right).
+
 const groupVariants = {
-  initial: (direction) => (direction === "signup-verify" ? { x: "-70vw" } : { x: 0 }),
+  initial: (direction) => (direction === "signup-verify" ? { x: "-100%" } : { x: 0 }),
   animate: (direction) => ({
     x: 0,
     transition:
       direction === "signup-verify"
-        ? { delay: 0.15, duration: 0.48, ease: EASE_OUT_CUBIC }
+        ? { delay: 0.2, duration: 0.5, ease: EASE_OUT_CUBIC }
         : { duration: 0 },
   }),
   exit: (direction) => ({
@@ -23,13 +22,18 @@ const groupVariants = {
   }),
 };
 
-export default function VerifyScene({ onLogin, onSubmit, direction }) {
+export default function VerifyScene({ onLogin, direction }) {
   const [code, setCode] = useState("");
+  const { login } = useAuth();
 
   const handleSubmit = (e) => {
     e.preventDefault();
-    console.log({ code });
-    onSubmit?.();
+    // TEMPORARY: mocks a successful verify response so you can test the
+    // Dashboard transition right now. Once the backend's /verify endpoint
+    // is live, replace this with:
+    //   const { token, user } = await authApi.verify({ email, otp: code });
+    //   login(token, user);
+    login("mock-jwt-token", { name: "Test User" });
   };
 
   const handleLoginClick = (e) => {
@@ -67,7 +71,7 @@ export default function VerifyScene({ onLogin, onSubmit, direction }) {
             src="/bunny-verify-left.png"
             alt="Bunny mascot cheering"
             className="absolute z-10 select-none pointer-events-none"
-            style={{ left: cqw(150), top: cqh(30), width: "auto", height: cqh(800), objectFit: "contain" }}
+            style={{ left: cqw(170), top: cqh(50), width: "auto", height: cqh(800), objectFit: "contain" }}
           />
 
           {/* Right bunny */}
@@ -75,7 +79,7 @@ export default function VerifyScene({ onLogin, onSubmit, direction }) {
             src="/bunny-verify-right.png"
             alt="Bunny mascot giving thumbs up"
             className="absolute z-10 select-none pointer-events-none"
-            style={{ left: cqw(1330), top: cqh(30), width: "auto", height: cqh(800), objectFit: "contain" }}
+            style={{ left: cqw(950), top: cqh(50), width: "auto", height: cqh(800), objectFit: "contain" }}
           />
 
           {/* Verify card — same 560x458 size/position as Login and Sign Up */}

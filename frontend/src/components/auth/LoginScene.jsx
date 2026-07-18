@@ -1,13 +1,10 @@
 import { useState } from "react";
 import { motion } from "framer-motion";
 
-// Accelerating ease-in (for things sliding OUT) and a confident ease-out-cubic
-// (for things sliding IN) — shared timing language across all scenes.
+
 const EASE_IN_ACCEL = [0.55, 0.055, 0.675, 0.19];
 const EASE_OUT_CUBIC = [0.33, 1, 0.68, 1];
 
-// Login only ever exits toward Sign Up, and only ever re-enters when coming
-// BACK from Sign Up or Verify (both treated the same: slide in from the left).
 const groupVariants = {
   initial: (direction) =>
     direction === "signup-login" || direction === "verify-login"

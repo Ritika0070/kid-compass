@@ -3,13 +3,6 @@ import { motion } from "framer-motion";
 
 const EASE_IN_ACCEL = [0.55, 0.055, 0.675, 0.19];
 
-// Sign Up enters ONLY from Login. Login's exit takes 0.4s — we delay Sign
-// Up's fall until Login is most of the way gone (0.3s in), so the two
-// clearly read as sequential rather than overlapping/fighting each other.
-// The fall itself is explicit keyframes (fall -> land -> tiny rebound up ->
-// settle) in a single unit (px) rather than a physics spring, since a
-// spring over this large a distance + delay was reading as a stutter
-// ("stops then drops") rather than one continuous motion.
 const groupVariants = {
   initial: (direction) => (direction === "login-signup" ? { y: -1000 } : { y: 0 }),
   animate: (direction) => ({
