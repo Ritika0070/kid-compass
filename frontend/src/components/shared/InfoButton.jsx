@@ -16,7 +16,7 @@ export default function InfoButton({ onClick }) {
         className="absolute inset-0 w-full h-full object-contain"
       />
       <span
-        className="absolute inset-0 flex items-center justify-center text-gray-500"
+        className="absolute inset-0 flex items-center justify-center text-black"
         style={{
           fontFamily: "'Londrina Shadow', cursive",
           fontSize: "clamp(28px, 3vw, 50px)",

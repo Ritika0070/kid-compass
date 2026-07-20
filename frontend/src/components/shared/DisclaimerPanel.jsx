@@ -126,7 +126,7 @@ export default function DisclaimerPanel({ onClose, points = DEFAULT_POINTS }) {
               left: 0,
               top: cqh(35),
               width: "100%",
-              color: "#723D46",
+              color: "#141414",
               textDecoration: "underline",
               textDecorationThickness: cqw(3),
               textUnderlineOffset: cqw(10),

@@ -6,15 +6,25 @@ const EASE_IN_ACCEL = [0.55, 0.055, 0.675, 0.19];
 const EASE_OUT_CUBIC = [0.33, 1, 0.68, 1];
 
 const groupVariants = {
-  initial: (direction) =>
-    direction === "signup-login" || direction === "verify-login"
-      ? { x: "-70vw" }
-      : { x: 0 },
+  initial: (direction) => {
+    if (direction === "signup-login" || direction === "verify-login") {
+      return { x: "-70vw", opacity: 1 };
+    }
+    // No direction yet = this is the very first mount (overlay just
+    // opened) — start invisible so it can fade in instead of popping in.
+    if (direction === null || direction === undefined) {
+      return { x: 0, opacity: 0 };
+    }
+    return { x: 0, opacity: 1 };
+  },
   animate: (direction) => ({
     x: 0,
+    opacity: 1,
     transition:
       direction === "signup-login" || direction === "verify-login"
         ? { duration: 0.45, ease: EASE_OUT_CUBIC }
+        : direction === null || direction === undefined
+        ? { duration: 0.5, ease: EASE_OUT_CUBIC }
         : { duration: 0 },
   }),
   exit: (direction) => ({
@@ -66,6 +76,7 @@ export default function LoginScene({ onSignUp, direction }) {
           initial="initial"
           animate="animate"
           exit="exit"
+          style={{ willChange: "transform, opacity" }}
         >
           {/* Bunny mascot — width-only sizing preserves its native aspect ratio */}
           <img
@@ -78,6 +89,7 @@ export default function LoginScene({ onSignUp, direction }) {
               width: "auto",
               height: cqh(800),
               objectFit: "contain",
+              
             }}
           />
 

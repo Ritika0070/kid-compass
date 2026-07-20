@@ -80,6 +80,9 @@ export default function SignUpScene({ onLogin, onSubmit, direction }) {
               width: "auto",
               height: cqh(650),
               objectFit: "contain",
+              willChange: "transform",
+              transform: "translateZ(0)",
+              backfaceVisibility: "hidden",
             }}
           />
 

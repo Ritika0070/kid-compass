@@ -71,7 +71,8 @@ export default function VerifyScene({ onLogin, direction }) {
             src="/bunny-verify-left.png"
             alt="Bunny mascot cheering"
             className="absolute z-10 select-none pointer-events-none"
-            style={{ left: cqw(170), top: cqh(50), width: "auto", height: cqh(800), objectFit: "contain" }}
+            style={{ left: cqw(170), top: cqh(50), width: "auto", height: cqh(800), objectFit: "contain", willChange: "transform", transform: "translateZ(0)",
+              backfaceVisibility: "hidden", }}
           />
 
           {/* Right bunny */}
