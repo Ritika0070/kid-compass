@@ -5,7 +5,7 @@ export default function InfoButton({ onClick }) {
       onClick={onClick}
       style={{
         top: "40px",
-        right: "40px",
+        right: "100px",
         width: "clamp(50px, 4vw, 80px)",
         aspectRatio: "1",
       }}

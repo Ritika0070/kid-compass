@@ -1,7 +1,6 @@
 import { useState } from "react";
 import { motion } from "framer-motion";
 import { useAuth } from "../../hooks/useAuth";
-import { authApi } from "../../services/api";
 
 const cardVariants = {
   initial: (direction) => ({
@@ -25,15 +24,14 @@ const cardVariants = {
   },
 };
 
-export default function LoginScene({ onSignUp, direction, notice, onClose, onInfoClick }) {
+export default function LoginScene({ onSignUp, direction, notice }) {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
   const [error, setError] = useState("");
-  const [submitting, setSubmitting] = useState(false);
   const { login } = useAuth();
 
-  const handleSubmit = async (e) => {
+  const handleSubmit = (e) => {
     e.preventDefault();
     setError("");
 
@@ -42,15 +40,10 @@ export default function LoginScene({ onSignUp, direction, notice, onClose, onInf
       return;
     }
 
-    try {
-      setSubmitting(true);
-      const data = await authApi.login({ email, password });
-      login(data.token, data.user);
-    } catch (err) {
-      setError(err.message || "Could not log in. Please try again.");
-    } finally {
-      setSubmitting(false);
-    }
+    login("mock-jwt-token", {
+      name: email.split("@")[0] || "User",
+      email,
+    });
   };
 
   const handleSignUpClick = (e) => {
@@ -73,29 +66,6 @@ export default function LoginScene({ onSignUp, direction, notice, onClose, onInf
           boxShadow: "0 24px 80px rgba(54, 35, 20, 0.22)",
         }}
       >
-
-        <div className="absolute right-4 top-4 z-20 flex items-center gap-2">
-          <button
-            type="button"
-            onClick={onInfoClick}
-            aria-label="Open disclaimer"
-            className="flex h-9 w-9 items-center justify-center rounded-full border border-[#ded8c6] bg-white/90 text-sm font-black text-[#5f584f] shadow-sm transition hover:bg-[#f3efd9] active:scale-95"
-            style={{ fontFamily: "'Inria Sans', sans-serif" }}
-          >
-            i
-          </button>
-
-          <button
-            type="button"
-            onClick={onClose}
-            aria-label="Close login panel"
-            className="flex h-9 w-9 items-center justify-center rounded-full border border-[#ded8c6] bg-white/90 text-lg font-black text-[#41372f] shadow-sm transition hover:bg-[#f3efd9] active:scale-95"
-            style={{ fontFamily: "'Inria Sans', sans-serif" }}
-          >
-            ×
-          </button>
-        </div>
-
         <div className="relative hidden min-h-[560px] overflow-hidden bg-[#eef7c9] md:block">
           <img
             src="/decorative-map-bg.png"
@@ -205,10 +175,9 @@ export default function LoginScene({ onSignUp, direction, notice, onClose, onInf
 
             <button
               type="submit"
-              disabled={submitting}
               className="h-12 w-full rounded-2xl bg-[#1f7a4d] text-base font-bold text-white shadow-lg transition hover:bg-[#17643e] active:scale-[0.99]"
             >
-              {submitting ? "Logging in..." : "Log in"}
+              Log in
             </button>
 
             <div className="mt-6 text-center text-sm text-[#6a6257]">

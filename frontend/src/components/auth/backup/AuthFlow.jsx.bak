@@ -3,34 +3,25 @@ import { AnimatePresence } from "framer-motion";
 import LoginScene from "./LoginScene";
 import SignUpScene from "./SignUpScene";
 
-export default function AuthFlow({ onClose, onInfoClick }) {
-  const [screen, setScreen] = useState("login");
+export default function AuthFlow() {
+  const [screen, setScreen] = useState("login"); // 'login' | 'signup'
+
+
   const [direction, setDirection] = useState(null);
-  const [notice, setNotice] = useState("");
 
   const navigate = (next, dir) => {
     setDirection(dir);
     setScreen(next);
   };
 
-  const handleSignupDone = () => {
-    setNotice("Account created. Please log in.");
-    navigate("login", "signup-login");
-  };
-
   return (
-    <AnimatePresence custom={direction} mode="wait">
+
+    <AnimatePresence custom={direction} mode="sync">
       {screen === "login" && (
         <LoginScene
           key="login"
           direction={direction}
-          notice={notice}
-          onClose={onClose}
-          onInfoClick={onInfoClick}
-          onSignUp={() => {
-            setNotice("");
-            navigate("signup", "login-signup");
-          }}
+          onSignUp={() => navigate("signup", "login-signup")}
         />
       )}
 
@@ -39,9 +30,7 @@ export default function AuthFlow({ onClose, onInfoClick }) {
           key="signup"
           direction={direction}
           onLogin={() => navigate("login", "signup-login")}
-          onClose={onClose}
-          onInfoClick={onInfoClick}
-          onSubmit={handleSignupDone}
+          onSubmit={() => navigate("login", "signup-login")}
         />
       )}
     </AnimatePresence>

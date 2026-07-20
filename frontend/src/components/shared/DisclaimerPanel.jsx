@@ -1,209 +1,153 @@
 import { motion } from "framer-motion";
 
-const EASE_OUT_CUBIC = [0.33, 1, 0.68, 1];
-
 const panelVariants = {
-  initial: { opacity: 0, scale: 0.92 },
-  animate: { opacity: 1, scale: 1, transition: { duration: 0.25, ease: EASE_OUT_CUBIC } },
-  exit: { opacity: 0, scale: 0.95, transition: { duration: 0.18, ease: "easeIn" } },
+  initial: { opacity: 0, y: 18, scale: 0.98 },
+  animate: {
+    opacity: 1,
+    y: 0,
+    scale: 1,
+    transition: { duration: 0.28, ease: [0.22, 1, 0.36, 1] },
+  },
+  exit: {
+    opacity: 0,
+    y: 10,
+    scale: 0.98,
+    transition: { duration: 0.18, ease: "easeIn" },
+  },
 };
 
-// Each point now has an emoji, a short bold headline, and a lighter detail line,
-// plus its own accent color so the panel doesn't read as one flat block of text.
 const DEFAULT_POINTS = [
   {
-    icon: "🔮",
     title: "Not a career predictor",
     text: "Shows your child's current interests, not future outcomes.",
-    color: "#E4572E",
   },
   {
-    icon: "🩺",
     title: "Not a diagnostic tool",
-    text: "Doesn't assess mental health, learning, or development.",
-    color: "#2A9D8F",
+    text: "Does not assess mental health, learning, or development.",
   },
   {
-    icon: "📸",
     title: "A snapshot, not a verdict",
-    text: "One session is limited — interests change as kids grow.",
-    color: "#3D5A80",
+    text: "One session is limited. Interests can change as kids grow.",
   },
   {
-    icon: "🔒",
-    title: "Your data, protected",
-    text: "Camera/mic used only with consent, never stored.",
-    color: "#6A4C93",
+    title: "Your data is protected",
+    text: "Camera and mic are used only with consent and are never stored.",
   },
   {
-    icon: "✨",
-    title: "AI-generated insights",
+    title: "AI assisted insights",
     text: "Meant to spark conversation, not serve as expert judgment.",
-    color: "#F2A541",
   },
 ];
 
 export default function DisclaimerPanel({ onClose, points = DEFAULT_POINTS }) {
-  const cqw = (px) => `${(px / 1920) * 100}cqw`;
-  const cqh = (px) => `${(px / 1080) * 100}cqh`;
-
   return (
     <>
-      {/* Full-screen invisible click-catcher — closes the panel on outside click */}
-      <div className="fixed inset-0 z-40 hidden md:block" onClick={onClose} />
+      <div className="fixed inset-0 z-40 bg-black/25" onClick={onClose} />
 
-      {/* Same 1920x1080 canvas scaling pattern as every other scene */}
-      <div
-        className="absolute left-1/2 top-1/2 z-40 hidden md:block"
-        style={{
-          width: "min(120vw,213.333vh)",
-          aspectRatio: "1920 / 1080",
-          transform: "translate(-50%, -50%)",
-          transformOrigin: "center center",
-          containerType: "size",
-          overflow: "visible",
-          pointerEvents: "none",
-        }}
-      >
-        <motion.div
+      <div className="fixed inset-0 z-50 flex items-center justify-center px-5 py-6 pointer-events-none">
+        <motion.section
+          role="dialog"
+          aria-modal="true"
+          aria-labelledby="disclaimer-title"
           variants={panelVariants}
           initial="initial"
           animate="animate"
           exit="exit"
           onClick={(e) => e.stopPropagation()}
-          className="absolute shadow-lg"
+          className="pointer-events-auto relative w-full max-w-2xl overflow-hidden border border-[#ded8c6] bg-[#fffdf3] shadow-2xl"
           style={{
-            left: cqw(265),
-            top: cqh(150),
-            width: cqw(1390),
-            height: cqh(780),
-            border: `${cqw(8)} solid #723D46`,
-            borderRadius: cqw(30),
-            background: "#f5fbd18a",
-            backdropFilter: "blur(24px)",
-            WebkitBackdropFilter: "blur(24px)",
-            boxSizing: "border-box",
-            pointerEvents: "auto",
+            borderRadius: "28px",
+            boxShadow: "0 24px 80px rgba(54, 35, 20, 0.22)",
           }}
         >
-          {/* Close (X) */}
-          <div
+          <button
+            type="button"
             onClick={onClose}
-            className="absolute cursor-pointer"
-            style={{
-              right: cqw(40),
-              top: cqh(35),
-              width: "clamp(50px, 4vw, 80px)",
-              aspectRatio: "1",
-              pointerEvents: "auto",
-              zIndex: 2,
-            }}
+            aria-label="Close disclaimer"
+            className="absolute right-5 top-5 flex h-10 w-10 items-center justify-center rounded-full border border-[#ded8c6] bg-white text-xl font-bold text-[#41372f] transition hover:bg-[#f3efd9] active:scale-95"
           >
-            <img
-              src="/info-ring.png"
-              alt=""
-              className="absolute inset-0 w-full h-full object-contain"
-            />
-            <span
-              className="absolute inset-0 flex items-center justify-center"
+            x
+          </button>
+
+          <div className="px-6 pb-7 pt-8 sm:px-10 sm:pb-9 sm:pt-10">
+            <p
+              className="m-0 text-sm font-bold uppercase tracking-[0.16em] text-[#7b6a46]"
+              style={{ fontFamily: "'Inria Sans', sans-serif" }}
+            >
+              Important note
+            </p>
+
+            <h1
+              id="disclaimer-title"
+              className="m-0 mt-2 pr-12 text-[#1f1f1f]"
               style={{
-                fontFamily: "'Londrina Shadow', cursive",
-                fontSize: "clamp(28px, 3vw, 50px)",
+                fontFamily: "'Baloo 2', cursive",
+                fontSize: "clamp(32px, 5vw, 48px)",
                 lineHeight: 1,
-                color: "#FF0000",
+                fontWeight: 800,
               }}
             >
-              X
-            </span>
-          </div>
+              Before you continue
+            </h1>
 
-          {/* DISCLAIMER title */}
-          <h2
-            className="absolute text-center font-normal m-0"
-            style={{
-              fontFamily: "'Londrina Shadow', cursive",
-              fontSize: cqw(80),
-              left: 0,
-              top: cqh(35),
-              width: "100%",
-              color: "#141414",
-              textDecoration: "underline",
-              textDecorationThickness: cqw(3),
-              textUnderlineOffset: cqw(10),
-              pointerEvents: "none",
-              zIndex: 2,
-            }}
-          >
-            DISCLAIMER
-          </h2>
+            <p
+              className="mb-6 mt-3 max-w-xl text-[#6a6257]"
+              style={{
+                fontFamily: "'Inria Sans', sans-serif",
+                fontSize: "16px",
+                lineHeight: 1.5,
+              }}
+            >
+              Kid Compass gives helpful guidance, but it should not replace parent judgment or expert advice.
+            </p>
 
-          {/* Point cards — icon bubble + bold colored title + detail line */}
-          <div
-            className="absolute"
-            style={{
-              left: cqw(120),
-              top: cqh(180),
-              width: cqw(1150),
-              display: "flex",
-              flexDirection: "column",
-              gap: cqh(18),
-              zIndex: 1,
-            }}
-          >
-            {points.map((point, i) => (
-              <div
-                key={i}
-                className="flex items-start"
-                style={{
-                  gap: cqw(25),
-                  background: "rgba(255,255,255,0.55)",
-                  borderRadius: cqw(16),
-                  padding: `${cqh(10)} ${cqw(20)}`,
-                  borderLeft: `${cqw(7)} solid ${point.color}`,
-                }}
-              >
+            <div className="space-y-3">
+              {points.map((point, index) => (
                 <div
-                  className="flex items-center justify-center flex-shrink-0"
-                  style={{
-                    width: cqw(60),
-                    height: cqw(60),
-                    borderRadius: "50%",
-                    background: point.color,
-                    fontSize: cqw(26),
-                  }}
+                  key={point.title}
+                  className="grid grid-cols-[32px_1fr] gap-3 rounded-2xl border border-[#ece5d2] bg-white px-4 py-3"
                 >
-                  {point.icon}
+                  <div className="flex h-8 w-8 items-center justify-center rounded-full bg-[#eef7d7] text-sm font-bold text-[#1f7a4d]">
+                    {index + 1}
+                  </div>
+
+                  <div>
+                    <h2
+                      className="m-0 text-[#2b2b2b]"
+                      style={{
+                        fontFamily: "'Baloo 2', cursive",
+                        fontSize: "21px",
+                        lineHeight: 1.05,
+                        fontWeight: 800,
+                      }}
+                    >
+                      {point.title}
+                    </h2>
+
+                    <p
+                      className="m-0 mt-1 text-[#5f584f]"
+                      style={{
+                        fontFamily: "'Inria Sans', sans-serif",
+                        fontSize: "15px",
+                        lineHeight: 1.35,
+                      }}
+                    >
+                      {point.text}
+                    </p>
+                  </div>
                 </div>
-                <div>
-                  <p
-                    className="m-0"
-                    style={{
-                      fontFamily: "'Inria Sans', sans-serif",
-                      fontWeight: 700,
-                      fontSize: cqw(34),
-                      color: point.color,
-                      lineHeight: 1.15,
-                    }}
-                  >
-                    {point.title}
-                  </p>
-                  <p
-                    className="m-0"
-                    style={{
-                      fontFamily: "'Inria Sans', sans-serif",
-                      fontSize: cqw(25),
-                      color: "#3A2E2E",
-                      lineHeight: 1.2,
-                      marginTop: cqh(2),
-                    }}
-                  >
-                    {point.text}
-                  </p>
-                </div>
-              </div>
-            ))}
+              ))}
+            </div>
+
+            <button
+              type="button"
+              onClick={onClose}
+              className="mt-6 h-12 w-full rounded-2xl bg-[#1f7a4d] text-base font-bold text-white shadow-lg transition hover:bg-[#17643e] active:scale-[0.99]"
+            >
+              Got it
+            </button>
           </div>
-        </motion.div>
+        </motion.section>
       </div>
     </>
   );

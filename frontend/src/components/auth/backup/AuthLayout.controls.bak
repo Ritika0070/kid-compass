@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import AuthFlow from "./AuthFlow";
 import DisclaimerPanel from "../shared/DisclaimerPanel";
+import InfoButton from "../shared/InfoButton";
 
 const EASE_OUT_CUBIC = [0.33, 1, 0.68, 1];
 
@@ -76,7 +77,22 @@ export default function AuthLayout({ onClose }) {
         }}
       />
 
-      <AuthFlow onClose={onClose} onInfoClick={() => setShowDisclaimer(true)} />
+      {!showDisclaimer && (
+        <>
+          <button
+            type="button"
+            onClick={onClose}
+            aria-label="Close login panel"
+            className="absolute right-10 top-10 z-50 flex h-12 w-12 items-center justify-center rounded-full border border-[#ded8c6] bg-white text-2xl font-bold text-[#41372f] shadow-lg transition hover:bg-[#f3efd9] active:scale-95"
+          >
+            x
+          </button>
+
+          <InfoButton onClick={() => setShowDisclaimer(true)} />
+        </>
+      )}
+
+      <AuthFlow />
 
       <AnimatePresence>
         {showDisclaimer && <DisclaimerPanel onClose={() => setShowDisclaimer(false)} />}

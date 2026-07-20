@@ -40,7 +40,7 @@ function AppRoutes() {
       <LandingPage onLoginClick={() => setShowAuth(true)} />
 
       <AnimatePresence>
-        {showAuth && <AuthLayout />}
+        {showAuth && <AuthLayout onClose={() => setShowAuth(false)} />}
       </AnimatePresence>
     </>
   );

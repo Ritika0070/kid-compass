@@ -1,0 +1,233 @@
+import { motion } from "framer-motion";
+
+const EASE_OUT = [0.22, 1, 0.36, 1];
+
+const panelVariants = {
+  initial: { opacity: 0, y: 20, scale: 0.97 },
+  animate: {
+    opacity: 1,
+    y: 0,
+    scale: 1,
+    transition: { duration: 0.32, ease: EASE_OUT },
+  },
+  exit: {
+    opacity: 0,
+    y: 12,
+    scale: 0.98,
+    transition: { duration: 0.2, ease: "easeIn" },
+  },
+};
+
+const DEFAULT_POINTS = [
+  {
+    label: "01",
+    title: "Not a career predictor",
+    text: "Shows your child's current interests, not future outcomes.",
+    color: "#E4572E",
+    bg: "#FFF3EE",
+  },
+  {
+    label: "02",
+    title: "Not a diagnostic tool",
+    text: "Does not assess mental health, learning, or development.",
+    color: "#228F82",
+    bg: "#EEFDF9",
+  },
+  {
+    label: "03",
+    title: "A snapshot, not a verdict",
+    text: "One session is limited. Interests can change as kids grow.",
+    color: "#315C8A",
+    bg: "#F0F6FF",
+  },
+  {
+    label: "04",
+    title: "Your data, protected",
+    text: "Camera and mic are used only with consent and are never stored.",
+    color: "#6A4C93",
+    bg: "#F7F0FF",
+  },
+  {
+    label: "05",
+    title: "AI assisted insights",
+    text: "Meant to spark conversation, not serve as expert judgment.",
+    color: "#C97D19",
+    bg: "#FFF7E8",
+  },
+];
+
+export default function DisclaimerPanel({ onClose, points = DEFAULT_POINTS }) {
+  return (
+    <>
+      <div className="fixed inset-0 z-40 bg-black/20" onClick={onClose} />
+
+      <div className="fixed inset-0 z-50 flex items-center justify-center px-4 py-6 pointer-events-none">
+        <motion.section
+          role="dialog"
+          aria-modal="true"
+          aria-labelledby="disclaimer-title"
+          variants={panelVariants}
+          initial="initial"
+          animate="animate"
+          exit="exit"
+          onClick={(e) => e.stopPropagation()}
+          className="pointer-events-auto relative flex max-h-[88vh] w-full max-w-5xl flex-col overflow-hidden border border-white/70 bg-[#fffdf4]/95 shadow-2xl backdrop-blur-2xl"
+          style={{
+            borderRadius: "28px",
+            boxShadow: "0 28px 90px rgba(31, 27, 18, 0.28)",
+          }}
+        >
+          <div className="absolute inset-x-0 top-0 h-2 bg-gradient-to-r from-[#E4572E] via-[#228F82] to-[#6A4C93]" />
+
+          <button
+            type="button"
+            onClick={onClose}
+            aria-label="Close disclaimer"
+            className="absolute right-5 top-5 z-10 flex h-11 w-11 items-center justify-center rounded-full border border-[#e5dcc5] bg-white text-2xl font-bold text-[#41372f] shadow-sm transition hover:bg-[#f7f1df] active:scale-95"
+          >
+            x
+          </button>
+
+          <div className="grid overflow-hidden md:grid-cols-[0.9fr_1.35fr]">
+            <aside className="relative hidden min-h-[560px] overflow-hidden bg-[#eef7d7] px-10 py-12 md:block">
+              <img
+                src="/decorative-map-bg.png"
+                alt=""
+                className="absolute inset-0 h-full w-full object-cover opacity-25"
+              />
+              <div className="relative z-10">
+                <p
+                  className="m-0 text-sm font-bold uppercase tracking-[0.18em] text-[#62713c]"
+                  style={{ fontFamily: "'Inria Sans', sans-serif" }}
+                >
+                  Parent note
+                </p>
+
+                <h2
+                  className="mt-5 max-w-xs text-[#20251c]"
+                  style={{
+                    fontFamily: "'Baloo 2', cursive",
+                    fontSize: "46px",
+                    lineHeight: 0.96,
+                    fontWeight: 800,
+                  }}
+                >
+                  Clear, safe and honest guidance.
+                </h2>
+
+                <p
+                  className="mt-5 max-w-sm text-[#58604d]"
+                  style={{
+                    fontFamily: "'Inria Sans', sans-serif",
+                    fontSize: "17px",
+                    lineHeight: 1.55,
+                  }}
+                >
+                  Kid Compass is designed to support conversations between children and parents. It should not replace expert advice.
+                </p>
+              </div>
+
+              <img
+                src="/bunny-sleepy.png"
+                alt=""
+                className="absolute bottom-[-50px] left-[-20px] h-[350px] select-none object-contain opacity-95"
+              />
+            </aside>
+
+            <main className="min-h-0 overflow-y-auto px-5 py-8 sm:px-8 md:px-10 md:py-12">
+              <div className="pr-12 md:pr-8">
+                <p
+                  className="m-0 text-sm font-bold uppercase tracking-[0.18em] text-[#7d704f]"
+                  style={{ fontFamily: "'Inria Sans', sans-serif" }}
+                >
+                  Important disclaimer
+                </p>
+
+                <h1
+                  id="disclaimer-title"
+                  className="m-0 mt-2 text-[#1f1f1f]"
+                  style={{
+                    fontFamily: "'Baloo 2', cursive",
+                    fontSize: "clamp(32px, 5vw, 52px)",
+                    lineHeight: 1,
+                    fontWeight: 800,
+                  }}
+                >
+                  Before you continue
+                </h1>
+
+                <p
+                  className="mb-7 mt-3 max-w-2xl text-[#675f53]"
+                  style={{
+                    fontFamily: "'Inria Sans', sans-serif",
+                    fontSize: "16px",
+                    lineHeight: 1.5,
+                  }}
+                >
+                  These points keep the experience transparent, privacy-aware, and useful for families.
+                </p>
+              </div>
+
+              <div className="space-y-3">
+                {points.map((point) => (
+                  <div
+                    key={point.title}
+                    className="grid grid-cols-[52px_1fr] items-start gap-4 rounded-2xl border bg-white/85 p-4 shadow-sm"
+                    style={{
+                      borderColor: `${point.color}33`,
+                    }}
+                  >
+                    <div
+                      className="flex h-12 w-12 items-center justify-center rounded-2xl text-sm font-black"
+                      style={{
+                        backgroundColor: point.bg,
+                        color: point.color,
+                        fontFamily: "'Inria Sans', sans-serif",
+                      }}
+                    >
+                      {point.label}
+                    </div>
+
+                    <div className="min-w-0">
+                      <h3
+                        className="m-0"
+                        style={{
+                          fontFamily: "'Baloo 2', cursive",
+                          fontSize: "clamp(20px, 2.5vw, 28px)",
+                          lineHeight: 1.05,
+                          fontWeight: 800,
+                          color: point.color,
+                        }}
+                      >
+                        {point.title}
+                      </h3>
+
+                      <p
+                        className="m-0 mt-1 text-[#4c463d]"
+                        style={{
+                          fontFamily: "'Inria Sans', sans-serif",
+                          fontSize: "clamp(14px, 1.8vw, 18px)",
+                          lineHeight: 1.35,
+                        }}
+                      >
+                        {point.text}
+                      </p>
+                    </div>
+                  </div>
+                ))}
+              </div>
+
+              <button
+                type="button"
+                onClick={onClose}
+                className="mt-7 h-12 w-full rounded-2xl bg-[#1f7a4d] text-base font-bold text-white shadow-lg transition hover:bg-[#17643e] active:scale-[0.99] sm:w-auto sm:px-8"
+              >
+                Got it
+              </button>
+            </main>
+          </div>
+        </motion.section>
+      </div>
+    </>
+  );
+}

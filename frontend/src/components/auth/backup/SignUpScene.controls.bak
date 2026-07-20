@@ -1,6 +1,5 @@
 import { useState } from "react";
 import { motion } from "framer-motion";
-import { authApi } from "../../services/api";
 
 const cardVariants = {
   initial: {
@@ -22,15 +21,14 @@ const cardVariants = {
   },
 };
 
-export default function SignUpScene({ onLogin, onSubmit, onClose, onInfoClick }) {
+export default function SignUpScene({ onLogin, onSubmit }) {
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
   const [error, setError] = useState("");
-  const [submitting, setSubmitting] = useState(false);
 
-  const handleSubmit = async (e) => {
+  const handleSubmit = (e) => {
     e.preventDefault();
     setError("");
 
@@ -44,15 +42,7 @@ export default function SignUpScene({ onLogin, onSubmit, onClose, onInfoClick })
       return;
     }
 
-    try {
-      setSubmitting(true);
-      await authApi.signup({ name, email, password });
-      onSubmit?.();
-    } catch (err) {
-      setError(err.message || "Could not create account. Please try again.");
-    } finally {
-      setSubmitting(false);
-    }
+    onSubmit?.();
   };
 
   const handleLoginClick = (e) => {
@@ -74,29 +64,6 @@ export default function SignUpScene({ onLogin, onSubmit, onClose, onInfoClick })
           boxShadow: "0 24px 80px rgba(54, 35, 20, 0.22)",
         }}
       >
-
-        <div className="absolute right-4 top-4 z-20 flex items-center gap-2">
-          <button
-            type="button"
-            onClick={onInfoClick}
-            aria-label="Open disclaimer"
-            className="flex h-9 w-9 items-center justify-center rounded-full border border-[#ded8c6] bg-white/90 text-sm font-black text-[#5f584f] shadow-sm transition hover:bg-[#f3efd9] active:scale-95"
-            style={{ fontFamily: "'Inria Sans', sans-serif" }}
-          >
-            i
-          </button>
-
-          <button
-            type="button"
-            onClick={onClose}
-            aria-label="Close login panel"
-            className="flex h-9 w-9 items-center justify-center rounded-full border border-[#ded8c6] bg-white/90 text-lg font-black text-[#41372f] shadow-sm transition hover:bg-[#f3efd9] active:scale-95"
-            style={{ fontFamily: "'Inria Sans', sans-serif" }}
-          >
-            ×
-          </button>
-        </div>
-
         <form onSubmit={handleSubmit} className="flex min-h-[590px] flex-col justify-center px-6 py-10 sm:px-12">
           <div className="mx-auto w-full max-w-md">
             <p
@@ -181,10 +148,9 @@ export default function SignUpScene({ onLogin, onSubmit, onClose, onInfoClick })
 
             <button
               type="submit"
-              disabled={submitting}
               className="h-12 w-full rounded-2xl bg-[#1f7a4d] text-base font-bold text-white shadow-lg transition hover:bg-[#17643e] active:scale-[0.99]"
             >
-              {submitting ? "Creating account..." : "Create account"}
+              Create account
             </button>
 
             <div className="mt-6 text-center text-sm text-[#6a6257]">

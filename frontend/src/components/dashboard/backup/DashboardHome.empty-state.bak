@@ -1,0 +1,181 @@
+const domainScores = [
+  {
+    name: "Logical-Analytical",
+    game: "Circuit Runner",
+    score: 78,
+    insight: "Strong pattern recognition with steady task focus.",
+  },
+  {
+    name: "Creative-Artistic",
+    game: "Magic Paintbrush",
+    score: 84,
+    insight: "High imagination and visual expression.",
+  },
+  {
+    name: "Verbal-Linguistic",
+    game: "Storyteller's Cave",
+    score: 72,
+    insight: "Comfortable building ideas through words.",
+  },
+  {
+    name: "Spatial-Visual",
+    game: "Build the Kingdom",
+    score: 68,
+    insight: "Developing structure and shape awareness.",
+  },
+  {
+    name: "Interpersonal-Social",
+    game: "Friendship Quest",
+    score: 81,
+    insight: "Shows thoughtful social decision-making.",
+  },
+  {
+    name: "Bodily-Kinesthetic",
+    game: "Star Catcher",
+    score: 74,
+    insight: "Good reaction timing and hand-eye coordination.",
+  },
+];
+
+const sessions = [
+  { date: "21 Jul 2026", activity: "Creative-Artistic", result: "High engagement", score: 84 },
+  { date: "20 Jul 2026", activity: "Logical-Analytical", result: "Strong accuracy", score: 78 },
+  { date: "19 Jul 2026", activity: "Interpersonal-Social", result: "Positive choices", score: 81 },
+];
+
+function StatCard({ label, value, helper }) {
+  return (
+    <div className="rounded-2xl border border-[#e4e7df] bg-white p-5 shadow-sm">
+      <p className="text-sm font-semibold text-[#6b7280]">{label}</p>
+      <p className="mt-3 text-3xl font-extrabold text-[#111827]">{value}</p>
+      <p className="mt-2 text-sm text-[#6b7280]">{helper}</p>
+    </div>
+  );
+}
+
+export default function DashboardHome() {
+  return (
+    <div className="mx-auto max-w-7xl space-y-6">
+      <section className="grid gap-5 xl:grid-cols-[1.5fr_0.9fr]">
+        <div className="rounded-3xl border border-[#e4e7df] bg-white p-6 shadow-sm">
+          <div className="flex flex-col justify-between gap-5 md:flex-row md:items-start">
+            <div>
+              <p className="text-sm font-bold uppercase tracking-[0.14em] text-[#1f7a4d]">
+                Child Profile
+              </p>
+              <h1
+                className="mt-2 text-4xl font-extrabold text-[#111827]"
+                style={{ fontFamily: "'Baloo 2', cursive" }}
+              >
+                Aarav's Interest Snapshot
+              </h1>
+              <p className="mt-3 max-w-2xl text-base leading-7 text-[#5f6673]">
+                A parent-facing overview of current strengths, curiosity patterns,
+                engagement, and communication confidence. These insights are exploratory
+                and may change over time.
+              </p>
+            </div>
+
+            <div className="rounded-2xl bg-[#f6f7f4] px-5 py-4">
+              <p className="text-sm font-semibold text-[#6b7280]">Default difficulty</p>
+              <p className="mt-1 text-xl font-extrabold text-[#111827]">Medium</p>
+              <p className="mt-1 text-sm text-[#6b7280]">Age group: 7-9</p>
+            </div>
+          </div>
+        </div>
+
+        <div className="rounded-3xl border border-[#dce8d3] bg-[#eef7e8] p-6 shadow-sm">
+          <p className="text-sm font-bold uppercase tracking-[0.14em] text-[#1f7a4d]">
+            AI Parent Insight
+          </p>
+          <p className="mt-4 text-lg font-semibold leading-7 text-[#223226]">
+            Your child currently shows strong engagement in creative and social
+            activities, with steady logical problem-solving. Treat this as a useful
+            conversation starter, not a fixed label.
+          </p>
+        </div>
+      </section>
+
+      <section className="grid gap-5 sm:grid-cols-2 xl:grid-cols-4">
+        <StatCard label="Games Completed" value="3/6" helper="Adventure progress" />
+        <StatCard label="Gems Earned" value="3" helper="Effort-based rewards" />
+        <StatCard label="Top Interest" value="Creative" helper="Based on score + engagement" />
+        <StatCard label="Confidence" value="76" helper="Separate communication snapshot" />
+      </section>
+
+      <section className="grid gap-6 xl:grid-cols-[1.4fr_0.9fr]">
+        <div className="rounded-3xl border border-[#e4e7df] bg-white p-6 shadow-sm">
+          <div className="flex items-center justify-between gap-4">
+            <div>
+              <h2 className="text-xl font-extrabold text-[#111827]">Interest Domains</h2>
+              <p className="mt-1 text-sm text-[#6b7280]">
+                Equal weighting across all six games.
+              </p>
+            </div>
+          </div>
+
+          <div className="mt-6 grid gap-4 md:grid-cols-2">
+            {domainScores.map((domain) => (
+              <div key={domain.name} className="rounded-2xl border border-[#edf0e8] bg-[#fbfcf8] p-4">
+                <div className="flex items-start justify-between gap-3">
+                  <div>
+                    <h3 className="font-extrabold text-[#111827]">{domain.name}</h3>
+                    <p className="mt-1 text-sm text-[#6b7280]">{domain.game}</p>
+                  </div>
+                  <span className="rounded-full bg-white px-3 py-1 text-sm font-extrabold text-[#1f7a4d]">
+                    {domain.score}
+                  </span>
+                </div>
+
+                <div className="mt-4 h-2 rounded-full bg-[#e5e9df]">
+                  <div
+                    className="h-2 rounded-full bg-[#1f7a4d]"
+                    style={{ width: `${domain.score}%` }}
+                  />
+                </div>
+
+                <p className="mt-3 text-sm leading-6 text-[#5f6673]">{domain.insight}</p>
+              </div>
+            ))}
+          </div>
+        </div>
+
+        <div className="space-y-6">
+          <div className="rounded-3xl border border-[#e4e7df] bg-white p-6 shadow-sm">
+            <h2 className="text-xl font-extrabold text-[#111827]">
+              Confidence & Communication
+            </h2>
+            <p className="mt-2 text-sm leading-6 text-[#6b7280]">
+              This section stays separate from interest domain scores.
+            </p>
+
+            <div className="mt-6 rounded-2xl bg-[#f6f7f4] p-5">
+              <p className="text-sm font-semibold text-[#6b7280]">Communication Style</p>
+              <p className="mt-2 text-2xl font-extrabold text-[#111827]">
+                Thoughtful Speaker
+              </p>
+              <p className="mt-2 text-sm leading-6 text-[#5f6673]">
+                Responds with care and takes time to form complete answers.
+              </p>
+            </div>
+          </div>
+
+          <div className="rounded-3xl border border-[#e4e7df] bg-white p-6 shadow-sm">
+            <h2 className="text-xl font-extrabold text-[#111827]">Recent Sessions</h2>
+            <div className="mt-5 space-y-3">
+              {sessions.map((session) => (
+                <div key={`${session.date}-${session.activity}`} className="flex items-center justify-between gap-4 rounded-2xl border border-[#edf0e8] p-4">
+                  <div>
+                    <p className="font-bold text-[#111827]">{session.activity}</p>
+                    <p className="mt-1 text-sm text-[#6b7280]">{session.date} · {session.result}</p>
+                  </div>
+                  <p className="text-lg font-extrabold text-[#1f7a4d]">{session.score}</p>
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
+      </section>
+    </div>
+  );
+}

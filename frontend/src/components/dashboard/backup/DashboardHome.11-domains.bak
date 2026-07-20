@@ -1,79 +1,19 @@
 import { useAuth } from "../../hooks/useAuth";
 
 const domains = [
-  {
-    name: "Logical / Analytical",
-    short: "Logic",
-    interest: "Puzzles, patterns, numbers, problem solving, strategy",
-    color: "#2563eb",
-  },
-  {
-    name: "Creative / Artistic",
-    short: "Creative",
-    interest: "Drawing, painting, imagination, colors, design, art",
-    color: "#9333ea",
-  },
-  {
-    name: "Verbal / Linguistic",
-    short: "Verbal",
-    interest: "Stories, reading, speaking, explaining ideas, vocabulary",
-    color: "#dc2626",
-  },
-  {
-    name: "Spatial / Visual",
-    short: "Spatial",
-    interest: "Blocks, maps, shapes, building, arranging, visual planning",
-    color: "#0891b2",
-  },
-  {
-    name: "Social / Interpersonal",
-    short: "Social",
-    interest: "Teamwork, friends, group activities, understanding people",
-    color: "#16a34a",
-  },
-  {
-    name: "Bodily / Kinesthetic",
-    short: "Movement",
-    interest: "Sports, dance, movement, physical activities, coordination",
-    color: "#d97706",
-  },
-  {
-    name: "Music / Rhythm",
-    short: "Music",
-    interest: "Singing, instruments, beats, rhythm, sound patterns",
-    color: "#db2777",
-  },
-  {
-    name: "Nature / Animals",
-    short: "Nature",
-    interest: "Animals, plants, gardening, environment, outdoor curiosity",
-    color: "#4d7c0f",
-  },
-  {
-    name: "Technology / Machines",
-    short: "Tech",
-    interest: "Gadgets, robots, coding, machines, how things work",
-    color: "#0f766e",
-  },
-  {
-    name: "Leadership / Organizing",
-    short: "Lead",
-    interest: "Planning, leading groups, decision-making, managing tasks",
-    color: "#7c3aed",
-  },
-  {
-    name: "Caregiving / Empathy",
-    short: "Care",
-    interest: "Caring for others, emotions, kindness, helping behavior",
-    color: "#ea580c",
-  },
+  { name: "Logical-Analytical", short: "Logic", color: "#2563eb" },
+  { name: "Creative-Artistic", short: "Creative", color: "#9333ea" },
+  { name: "Verbal-Linguistic", short: "Verbal", color: "#dc2626" },
+  { name: "Spatial-Visual", short: "Spatial", color: "#0891b2" },
+  { name: "Interpersonal-Social", short: "Social", color: "#16a34a" },
+  { name: "Bodily-Kinesthetic", short: "Movement", color: "#d97706" },
 ];
 
 const roadmap = [
   "Create child profile",
-  "Start first activity",
-  "Complete 3 domains",
-  "Review first parent insight",
+  "Start Adventure Hub",
+  "Complete first game",
+  "Review first insight",
 ];
 
 function StatCard({ label, value, helper }) {
@@ -95,7 +35,14 @@ function ProgressRing({ value = 0 }) {
     <div className="flex items-center gap-5">
       <div className="relative h-32 w-32 shrink-0">
         <svg viewBox="0 0 120 120" className="h-full w-full -rotate-90">
-          <circle cx="60" cy="60" r={radius} fill="none" stroke="#e5e9df" strokeWidth="12" />
+          <circle
+            cx="60"
+            cy="60"
+            r={radius}
+            fill="none"
+            stroke="#e5e9df"
+            strokeWidth="12"
+          />
           <circle
             cx="60"
             cy="60"
@@ -108,7 +55,6 @@ function ProgressRing({ value = 0 }) {
             strokeDashoffset={strokeDashoffset}
           />
         </svg>
-
         <div className="absolute inset-0 flex flex-col items-center justify-center">
           <span className="text-3xl font-extrabold text-[#111827]">{value}%</span>
           <span className="text-xs font-semibold text-[#6b7280]">complete</span>
@@ -118,27 +64,26 @@ function ProgressRing({ value = 0 }) {
       <div>
         <h3 className="text-lg font-extrabold text-[#111827]">Assessment Progress</h3>
         <p className="mt-2 text-sm leading-6 text-[#6b7280]">
-          Progress will update as each domain activity is completed.
+          Progress will increase as games are completed. No scores are generated before a test is taken.
         </p>
       </div>
     </div>
   );
 }
 
-function DomainBarChart() {
+function EmptyBarChart() {
   return (
-    <div className="h-80 overflow-x-auto">
-      <div className="flex h-full min-w-[760px] items-end gap-3 border-b border-l border-[#e4e7df] px-2 pb-4">
+    <div className="h-72">
+      <div className="flex h-full items-end gap-3 border-b border-l border-[#e4e7df] px-2 pb-4">
         {domains.map((domain) => (
           <div key={domain.name} className="flex h-full min-w-0 flex-1 flex-col justify-end">
             <div className="relative flex flex-1 items-end justify-center">
-              <div className="h-full w-full max-w-[36px] rounded-t-2xl bg-[#eef1e8]" />
+              <div className="h-full w-full max-w-[44px] rounded-t-2xl bg-[#eef1e8]" />
               <div
-                className="absolute bottom-0 h-1 w-full max-w-[36px] rounded-t-2xl"
+                className="absolute bottom-0 h-1 w-full max-w-[44px] rounded-t-2xl"
                 style={{ backgroundColor: domain.color }}
               />
             </div>
-
             <p className="mt-3 truncate text-center text-xs font-bold text-[#6b7280]">
               {domain.short}
             </p>
@@ -149,13 +94,13 @@ function DomainBarChart() {
   );
 }
 
-function RadarChart() {
-  const center = 105;
-  const levels = [82, 58, 34];
+function EmptyRadarChart() {
+  const center = 95;
+  const levels = [72, 50, 28];
 
   return (
     <div className="flex items-center justify-center">
-      <svg viewBox="0 0 210 210" className="h-72 w-full max-w-[330px]">
+      <svg viewBox="0 0 190 190" className="h-64 w-full max-w-[300px]">
         {levels.map((size) => (
           <polygon
             key={size}
@@ -173,21 +118,21 @@ function RadarChart() {
 
         {domains.map((domain, index) => {
           const angle = (Math.PI * 2 * index) / domains.length - Math.PI / 2;
-          const x = center + Math.cos(angle) * 90;
-          const y = center + Math.sin(angle) * 90;
-          const labelX = center + Math.cos(angle) * 101;
-          const labelY = center + Math.sin(angle) * 101;
+          const x = center + Math.cos(angle) * 82;
+          const y = center + Math.sin(angle) * 82;
+          const labelX = center + Math.cos(angle) * 92;
+          const labelY = center + Math.sin(angle) * 92;
 
           return (
             <g key={domain.name}>
               <line x1={center} y1={center} x2={x} y2={y} stroke="#e4e7df" />
-              <circle cx={x} cy={y} r="3.5" fill={domain.color} />
+              <circle cx={x} cy={y} r="4" fill={domain.color} />
               <text
                 x={labelX}
                 y={labelY}
                 textAnchor="middle"
                 dominantBaseline="middle"
-                fontSize="7.5"
+                fontSize="8"
                 fontWeight="700"
                 fill="#6b7280"
               >
@@ -197,8 +142,22 @@ function RadarChart() {
           );
         })}
 
-        <text x="105" y="109" textAnchor="middle" fontSize="12" fontWeight="800" fill="#111827">
-          Pending
+        <polygon
+          points="95,95 95,95 95,95 95,95 95,95 95,95"
+          fill="#1f7a4d22"
+          stroke="#1f7a4d"
+          strokeWidth="2"
+        />
+
+        <text
+          x="95"
+          y="100"
+          textAnchor="middle"
+          fontSize="12"
+          fontWeight="800"
+          fill="#111827"
+        >
+          No data yet
         </text>
       </svg>
     </div>
@@ -226,7 +185,9 @@ function TimelineChart() {
 
             <div className="pt-1">
               <p className="font-bold text-[#111827]">{item}</p>
-              <p className="mt-1 text-sm text-[#6b7280]">{done ? "Completed" : "Pending"}</p>
+              <p className="mt-1 text-sm text-[#6b7280]">
+                {done ? "Completed" : "Pending"}
+              </p>
             </div>
           </div>
         );
@@ -235,30 +196,30 @@ function TimelineChart() {
   );
 }
 
-function DomainCard({ domain }) {
+function ConfidenceChart() {
+  const items = [
+    { label: "Speech", value: 0 },
+    { label: "Detail", value: 0 },
+    { label: "Energy", value: 0 },
+    { label: "Comfort", value: 0 },
+  ];
+
   return (
-    <div className="rounded-2xl border border-[#edf0e8] bg-[#fbfcf8] p-4 transition hover:-translate-y-0.5 hover:border-[#d8ddd1] hover:bg-white hover:shadow-sm">
-      <div className="flex items-start justify-between gap-3">
-        <div>
-          <h3 className="font-extrabold text-[#111827]">{domain.name}</h3>
-          <p className="mt-1 text-sm leading-5 text-[#6b7280]">{domain.interest}</p>
+    <div className="space-y-4">
+      {items.map((item) => (
+        <div key={item.label}>
+          <div className="flex items-center justify-between">
+            <p className="text-sm font-bold text-[#111827]">{item.label}</p>
+            <p className="text-sm font-bold text-[#6b7280]">Pending</p>
+          </div>
+          <div className="mt-2 h-2 rounded-full bg-[#e5e9df]">
+            <div
+              className="h-2 rounded-full bg-[#1f7a4d]"
+              style={{ width: `${item.value}%` }}
+            />
+          </div>
         </div>
-
-        <span
-          className="rounded-full px-3 py-1 text-sm font-extrabold"
-          style={{ backgroundColor: `${domain.color}14`, color: domain.color }}
-        >
-          --
-        </span>
-      </div>
-
-      <div className="mt-4 h-2 rounded-full bg-[#e5e9df]">
-        <div className="h-2 w-0 rounded-full" style={{ backgroundColor: domain.color }} />
-      </div>
-
-      <p className="mt-3 text-sm leading-6 text-[#5f6673]">
-        Complete this domain activity to generate a score.
-      </p>
+      ))}
     </div>
   );
 }
@@ -267,8 +228,9 @@ export default function DashboardHome() {
   const { user } = useAuth();
   const childName = user?.name || "Your child";
 
-  const completedDomains = 0;
-  const progressPercent = Math.round((completedDomains / domains.length) * 100);
+  const completedGames = 0;
+  const gemsEarned = 0;
+  const progressPercent = Math.round((completedGames / 6) * 100);
 
   return (
     <div className="mx-auto max-w-7xl space-y-6">
@@ -288,15 +250,15 @@ export default function DashboardHome() {
               </h1>
 
               <p className="mt-3 max-w-2xl text-base leading-7 text-[#5f6673]">
-                Track current interests across 11 domains. Scores will appear only after
-                activities are completed.
+                A clean overview of assessment progress, domain readiness,
+                confidence snapshot, and parent-facing insights.
               </p>
             </div>
 
             <div className="rounded-2xl bg-[#f6f7f4] px-5 py-4">
               <p className="text-sm font-semibold text-[#6b7280]">Assessment status</p>
               <p className="mt-1 text-xl font-extrabold text-[#111827]">Not started</p>
-              <p className="mt-1 text-sm text-[#6b7280]">No domain data yet</p>
+              <p className="mt-1 text-sm text-[#6b7280]">No game data yet</p>
             </div>
           </div>
         </div>
@@ -308,18 +270,14 @@ export default function DashboardHome() {
 
           <p className="mt-4 text-lg font-semibold leading-7 text-[#223226]">
             No insight is available yet. Once {childName} completes activities,
-            this area will summarize current strengths and curiosity patterns.
-          </p>
-
-          <p className="mt-4 text-sm leading-6 text-[#5f6673]">
-            These are current observations, not career predictions.
+            this area will summarize current interests without making predictions.
           </p>
         </div>
       </section>
 
       <section className="grid gap-5 sm:grid-cols-2 xl:grid-cols-4">
-        <StatCard label="Domains Completed" value={`${completedDomains}/${domains.length}`} helper="Across all interest areas" />
-        <StatCard label="Rewards Earned" value="0" helper="Earned after completed activities" />
+        <StatCard label="Games Completed" value={`${completedGames}/6`} helper="Adventure progress" />
+        <StatCard label="Gems Earned" value={gemsEarned} helper="Earned after games" />
         <StatCard label="Top Interest" value="Pending" helper="Available after assessments" />
         <StatCard label="Confidence" value="Pending" helper="After Talk with Buddy" />
       </section>
@@ -334,7 +292,7 @@ export default function DashboardHome() {
             <div>
               <h2 className="text-xl font-extrabold text-[#111827]">Domain Score Chart</h2>
               <p className="mt-1 text-sm text-[#6b7280]">
-                11 domains will be compared here after tests.
+                Bars activate after each game is completed.
               </p>
             </div>
             <span className="rounded-full bg-[#f6f7f4] px-3 py-1 text-xs font-bold text-[#6b7280]">
@@ -343,53 +301,58 @@ export default function DashboardHome() {
           </div>
 
           <div className="mt-6">
-            <DomainBarChart />
+            <EmptyBarChart />
           </div>
         </div>
 
         <div className="rounded-3xl border border-[#e4e7df] bg-white p-6 shadow-sm">
           <h2 className="text-xl font-extrabold text-[#111827]">Journey Timeline</h2>
           <p className="mt-1 text-sm text-[#6b7280]">Next milestones</p>
-
           <div className="mt-6">
             <TimelineChart />
           </div>
         </div>
       </section>
 
-      <section className="grid gap-6 xl:grid-cols-[0.95fr_1.35fr]">
+      <section className="grid gap-6 xl:grid-cols-[1fr_1fr]">
         <div className="rounded-3xl border border-[#e4e7df] bg-white p-6 shadow-sm">
           <h2 className="text-xl font-extrabold text-[#111827]">Interest Radar</h2>
           <p className="mt-1 text-sm text-[#6b7280]">
-            A full interest shape will appear after enough data is collected.
+            This will compare all six domains after assessments.
           </p>
-
           <div className="mt-4">
-            <RadarChart />
+            <EmptyRadarChart />
           </div>
         </div>
 
         <div className="rounded-3xl border border-[#e4e7df] bg-white p-6 shadow-sm">
-          <h2 className="text-xl font-extrabold text-[#111827]">Interest Domains</h2>
+          <h2 className="text-xl font-extrabold text-[#111827]">
+            Confidence & Communication
+          </h2>
           <p className="mt-1 text-sm text-[#6b7280]">
-            Each domain maps to a different type of curiosity or strength.
+            Separate from interest domain scoring.
           </p>
 
-          <div className="mt-6 grid gap-4 md:grid-cols-2">
-            {domains.map((domain) => (
-              <DomainCard key={domain.name} domain={domain} />
-            ))}
+          <div className="mt-6 rounded-2xl bg-[#f6f7f4] p-5">
+            <p className="text-sm font-semibold text-[#6b7280]">Communication Style</p>
+            <p className="mt-2 text-2xl font-extrabold text-[#111827]">Pending</p>
+            <p className="mt-2 text-sm leading-6 text-[#5f6673]">
+              Complete Talk with Buddy to generate this snapshot.
+            </p>
+          </div>
+
+          <div className="mt-6">
+            <ConfidenceChart />
           </div>
         </div>
       </section>
 
       <section className="rounded-3xl border border-[#e4e7df] bg-white p-6 shadow-sm">
         <h2 className="text-xl font-extrabold text-[#111827]">Recent Sessions</h2>
-
         <div className="mt-5 rounded-2xl border border-dashed border-[#d8ddd1] bg-[#fbfcf8] p-6 text-center">
           <p className="font-bold text-[#111827]">No sessions yet</p>
           <p className="mt-2 text-sm leading-6 text-[#6b7280]">
-            Completed activities, scores, and insights will appear here.
+            Completed games and assessments will appear here.
           </p>
         </div>
       </section>
