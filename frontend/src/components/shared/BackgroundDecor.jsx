@@ -1,24 +1,32 @@
 import { useEffect, useRef } from "react";
 
+// NOTE: this now bounces boxes off its OWN container's size instead of
+// window.innerWidth/innerHeight. Original behavior only worked correctly
+// as a full-page background (where container size == window size); reusing
+// it inside something smaller — like a header — needs the "world" the
+// boxes move around in to match the space they're actually rendered into,
+// or most of them just drift out of view and get clipped. Colors, opacity,
+// and rotate are untouched — only width/height were scaled down (~60% of
+// the original) since the boxes were reading too big for the header.
 const BackgroundDecor = () => {
+  const containerRef = useRef(null);
   const refs = useRef([]);
 
-  // width/height/color/opacity/rotate: exactly as given, never scaled.
   const boxes = [
-    { width: 330, height: 300, color: "#FAF682", opacity: 0.5, rotate: -10 },
-    { width: 190, height: 210, color: "#FCC6B8", opacity: 0.25, rotate: -27 },
-    { width: 190, height: 190, color: "#c2f7c0", opacity: 0.3, rotate: -10 },
-    { width: 240, height: 240, color: "#c2f7c0", opacity: 0.3, rotate: -25 },
-    { width: 470, height: 370, color: "#FFF8BE", opacity: 1, rotate: 10 },
-    { width: 240, height: 330, color: "#befffc", opacity: 0.3, rotate: -25 },
-    { width: 300, height: 250, color: "#c8b7f5", opacity: 0.3, rotate: 10 },
-    { width: 330, height: 330, color: "#ccb8fc", opacity: 0.2, rotate: 15 },
+    { width: 198, height: 180, color: "#FAF682", opacity: 0.5, rotate: -10 },
+    { width: 114, height: 126, color: "#FCC6B8", opacity: 0.25, rotate: -27 },
+    { width: 114, height: 114, color: "#c2f7c0", opacity: 0.3, rotate: -10 },
+    { width: 144, height: 144, color: "#c2f7c0", opacity: 0.3, rotate: -25 },
+    { width: 282, height: 222, color: "#FFF8BE", opacity: 1, rotate: 10 },
+    { width: 144, height: 198, color: "#befffc", opacity: 0.3, rotate: -25 },
+    { width: 180, height: 150, color: "#c8b7f5", opacity: 0.3, rotate: 10 },
+    { width: 198, height: 198, color: "#ccb8fc", opacity: 0.2, rotate: 15 },
   ];
 
-  // Starting layout: a 4-column x 2-row grid spread across the real
-  // window (fractions of innerWidth/innerHeight), so boxes always land
-  // spaced apart no matter the screen size — no clustering, no clamping
-  // multiple boxes toward the same edge.
+  // Starting layout: a 4-column x 2-row grid spread across the container
+  // (fractions of its own width/height), so boxes always land spaced apart
+  // no matter the container size — no clustering, no clamping multiple
+  // boxes toward the same edge.
   const gridSlots = [
     { col: 0, row: 0 },
     { col: 1, row: 0 },
@@ -33,6 +41,14 @@ const BackgroundDecor = () => {
   const rowFrac = [0.03, 0.58];
 
   useEffect(() => {
+    const container = containerRef.current;
+    if (!container) return;
+
+    const getSize = () => ({
+      w: container.clientWidth,
+      h: container.clientHeight,
+    });
+
     const placeInGrid = (b, slot, w, h) => {
       let x = colFrac[slot.col] * w;
       let y = rowFrac[slot.row] * h;
@@ -41,13 +57,15 @@ const BackgroundDecor = () => {
       return { x, y };
     };
 
+    const { w: startW, h: startH } = getSize();
+
     const state = boxes.map((b, i) => {
-      const { x, y } = placeInGrid(b, gridSlots[i], window.innerWidth, window.innerHeight);
+      const { x, y } = placeInGrid(b, gridSlots[i], startW, startH);
       return {
         x,
         y,
-        dx: (Math.random() * 0.35 + 0.15) * (Math.random() < 0.5 ? -1 : 1),
-        dy: (Math.random() * 0.35 + 0.15) * (Math.random() < 0.5 ? -1 : 1),
+        dx: (Math.random() * 0.25 + 0.1) * (Math.random() < 0.5 ? -1 : 1),
+        dy: (Math.random() * 0.25 + 0.1) * (Math.random() < 0.5 ? -1 : 1),
         rot: b.rotate,
         drot: (Math.random() * 0.03 + 0.01) * (Math.random() < 0.5 ? -1 : 1),
       };
@@ -65,13 +83,12 @@ const BackgroundDecor = () => {
     let frame;
 
     const animate = () => {
+      const { w, h } = getSize();
+
       state.forEach((s, i) => {
         s.x += s.dx;
         s.y += s.dy;
         s.rot += s.drot;
-
-        const w = window.innerWidth;
-        const h = window.innerHeight;
 
         const bw = boxes[i].width;
         const bh = boxes[i].height;
@@ -97,7 +114,7 @@ const BackgroundDecor = () => {
   }, []);
 
   return (
-    <>
+    <div ref={containerRef} style={{ position: "absolute", inset: 0, overflow: "hidden" }}>
       {boxes.map((box, i) => (
         <div
           key={i}
@@ -124,7 +141,7 @@ const BackgroundDecor = () => {
           }}
         />
       ))}
-    </>
+    </div>
   );
 };
 

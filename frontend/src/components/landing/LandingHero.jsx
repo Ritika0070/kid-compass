@@ -8,11 +8,12 @@ export default function LandingHero({ onLoginClick }) {
   const cqw = (px) => `${(px / 1441) * 100}cqw`;
   const cqh = (px) => `${(px / 743) * 100}cqh`;
 
-  // Outer frame runs down to the bottom of the feature cards (Y847) so the
-  // cards can straddle the hero's bottom edge without getting clipped by
-  // the hero's own overflow:hidden + rounded corners.
+  // Outer frame runs down to the bottom of the AI-Powered Guidance card
+  // (Y1062) so the feature cards + guidance card can straddle the hero's
+  // bottom edge without getting clipped by the hero's own overflow:hidden
+  // + rounded corners.
   const ocqw = (px) => `${(px / 1441) * 100}cqw`;
-  const ocqh = (px) => `${(px / 847) * 100}cqh`;
+  const ocqh = (px) => `${(px / 1062) * 100}cqh`;
 
   // Scroll-linked parallax: as the hero scrolls up and out of view, the
   // headline drifts down and gets clipped by the hero's own
@@ -22,6 +23,13 @@ export default function LandingHero({ onLoginClick }) {
   const { scrollYProgress } = useScroll({ target: heroRef, offset: ["start start", "end start"] });
   const rawHeadlineY = useTransform(scrollYProgress, [0, 1], [0, 300]);
   const headlineY = useSpring(rawHeadlineY, { stiffness: 120, damping: 22, mass: 0.4 });
+ const rawImageScale = useTransform(scrollYProgress, [0, 1], [1.06, 1]);
+
+  const imageScale = useSpring(rawImageScale, {
+    stiffness: 120,
+    damping: 22,
+    mass: 0.4,
+  });
 
   // Shared spring for hover/tap scale — critically-damped enough that it
   // eases to rest instead of oscillating (avoids the "double bounce").
@@ -30,7 +38,7 @@ export default function LandingHero({ onLoginClick }) {
   return (
     <div
       className="relative w-full hidden md:block"
-      style={{ aspectRatio: "1441 / 847", containerType: "size" }}
+      style={{ aspectRatio: "1441 / 1062", containerType: "size" }}
     >
       {/* Hero image — clipped, rounded bottom corners only */}
       <section
@@ -38,11 +46,15 @@ export default function LandingHero({ onLoginClick }) {
         className="absolute top-0 left-0 w-full overflow-hidden"
         style={{ height: ocqh(743), borderRadius: "0 0 50px 50px", containerType: "size" }}
       >
-        <img
-          src="/landscape-hero.png"
-          alt="Bunny, cat and dog looking out over the valley"
-          className="absolute inset-0 w-full h-full object-cover"
-        />
+        <motion.img
+        src="/landscape-hero.png"
+        alt="Bunny, cat and dog looking out over the valley"
+        className="absolute inset-0 w-full h-full object-cover"
+        style={{
+          scale: imageScale,
+          transformOrigin: "center center",
+        }}
+      />
 
         <LandingNav cqw={cqw} cqh={cqh} />
 
@@ -430,6 +442,183 @@ export default function LandingHero({ onLoginClick }) {
             </p>
           </div>
         </motion.div>
+      </motion.div>
+
+      {/* Card 4 — AI-Powered Guidance (long card, desktop only, no mobile
+          spec yet so it's simply not rendered there — same "hidden md:block"
+          coming from the outer wrapper).
+          Exact from the Figma panel: card 80,867 1280x195, radius 34,
+          fill #E5F0F5 · icon slot #1 780,889 121x145, radius 11, fill #FFF ·
+          "SEE YOUR INSIGHTS" button 466,1011 173x34, radius 20, fill #4760BC.
+          Not read off a panel (estimated from the screenshot, nudge if off):
+          bunny size/position, speech-bubble position, heading/paragraph
+          position, and the gap between the 4 icon slots (assumed even,
+          ~140px apart center-to-center from slot 1). Only slots 3 (plant)
+          and 4 (robot) have art in the Figma file — 1 and 2 are blank
+          there too, left empty here until those icons exist. */}
+      <motion.div
+        className="absolute z-10"
+        initial={{ y: 60, opacity: 0 }}
+        whileInView={{ y: 0, opacity: 1 }}
+        viewport={{ once: true, amount: 0.35 }}
+        transition={{ duration: 0.55, delay: 0.36, ease: [0.33, 1, 0.68, 1] }}
+        style={{
+          left: ocqw(80),
+          top: ocqh(867),
+          width: ocqw(1280),
+          height: ocqh(195),
+          backgroundColor: "#E5F0F5",
+          borderRadius: "34px",
+        }}
+      >
+        {/* Bunny — estimated size/position */}
+        <img
+          src="/bunny-pointing.png"
+          alt="Bunny mascot pointing at insights"
+          style={{
+            position: "absolute",
+            left: ocqw(20),
+            bottom: ocqh(-4), // Move down by 10 design units
+            height: ocqh(247),
+            width: "auto",
+            objectFit: "contain",
+          }}
+        />
+
+        {/* Speech bubble — estimated position */}
+        <div
+          className="absolute"
+          style={{
+            left: ocqw(190),
+            top: ocqh(-5),
+            width: ocqw(150),
+            padding: `${ocqh(10)} ${ocqw(14)}`,
+            backgroundColor: "#FFFFFF",
+            borderRadius: "16px",
+            boxShadow: "0 2px 6px rgba(0,0,0,0.08)",
+          }}
+        >
+          <p
+            className="m-0"
+            style={{
+              fontFamily: "'Baloo 2', cursive",
+              fontWeight: 600,
+              fontSize: ocqw(12),
+              lineHeight: 1.25,
+              color: "#212020",
+            }}
+          >
+            I've found some amazing insights for you!
+          </p>
+          <span
+            aria-hidden="true"
+            style={{
+              position: "absolute",
+              left: ocqw(20),
+              bottom: "-6px",
+              width: "12px",
+              height: "12px",
+              backgroundColor: "#FFFFFF",
+              transform: "rotate(45deg)",
+            }}
+          />
+        </div>
+
+        {/* Heading + paragraph — left edge matches the button below (exact
+            X466 → relative 386); vertical position estimated */}
+        <div style={{ position: "absolute", left: ocqw(386), top: ocqh(20), width: ocqw(280) }}>
+          <p
+            className="m-0"
+            style={{
+              fontFamily: "'Baloo 2', cursive",
+              fontWeight: 800,
+              fontSize: ocqw(26),
+              color: "#212020",
+            }}
+          >
+            AI - Powered Guidance
+          </p>
+          <p
+            className="m-0"
+            style={{
+              fontFamily: "'Baloo 2', cursive",
+              fontWeight: 500,
+              fontSize: ocqw(16),
+              color: "#3A3A3A",
+              lineHeight: 1.35,
+              marginTop: ocqh(7),
+            }}
+          >
+            Our AI friend analyzes your jouney and helps you discover career fields and hobbies that match your interests.
+          </p>
+        </div>
+
+        {/* SEE YOUR INSIGHTS button — exact: 466,1011 173x34, radius 20, #4760BC
+            (relative left 386, top 144) */}
+        <motion.button
+          type="button"
+          className="absolute flex items-center justify-center"
+          whileHover={{ scale: 1.03 }}
+          whileTap={{ scale: 0.97 }}
+          transition={hoverTransition}
+          style={{
+            left: ocqw(386),
+            top: ocqh(144),
+            width: ocqw(173),
+            height: ocqh(34),
+            boxSizing: "border-box",
+            backgroundColor: "#4760BC",
+            borderRadius: "20px",
+            border: "none",
+            cursor: "pointer",
+          }}
+        >
+          <span
+            style={{
+              fontFamily: "'Baloo 2', cursive",
+              fontWeight: 800,
+              fontSize: ocqw(13),
+              color: "#FFFFFF",
+            }}
+          >
+            SEE YOUR INSIGHTS
+          </span>
+        </motion.button>
+
+        {/* 4 icon slots — slot 1 exact: 780,889 121x145 (relative 700,22),
+            radius 11, fill #FFF. Slots 2-4 spaced ~140px apart (estimated,
+            not on a panel). Only plant (slot 3) and robot (slot 4) have
+            art in Figma — 1 & 2 stay empty white rounded boxes. */}
+        {[
+          { icon: null },
+          { icon: null },
+          { icon: "/icon-plant.png" },
+          { icon: "/icon-robot.png" },
+        ].map((slot, i) => (
+          <div
+            key={i}
+            style={{
+              position: "absolute",
+              left: ocqw(700 + i * 140),
+              top: ocqh(22),
+              width: ocqw(121),
+              height: ocqh(145),
+              backgroundColor: "#FFFFFF",
+              borderRadius: "11px",
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+            }}
+          >
+            {slot.icon && (
+              <img
+                src={slot.icon}
+                alt=""
+                style={{ width: "70%", height: "70%", objectFit: "contain" }}
+              />
+            )}
+          </div>
+        ))}
       </motion.div>
     </div>
   );

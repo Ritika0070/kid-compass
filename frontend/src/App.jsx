@@ -8,11 +8,6 @@ import DashboardLayout from "./components/dashboard/DashboardLayout";
 import DashboardHome from "./components/dashboard/DashboardHome";
 import ChildProfiles from "./components/dashboard/ChildProfiles";
 
-// TEMP: flip to false to restore the normal landing → login → dashboard
-// flow. While true, the app skips straight to the dashboard so it's faster
-// to iterate on dashboard UI without logging in every time.
-const SKIP_AUTH_FOR_DEV = true;
-
 function AppRoutes() {
   const { isAuthenticated, loading } = useAuth();
   const [showAuth, setShowAuth] = useState(false);
@@ -24,7 +19,7 @@ function AppRoutes() {
 
   if (loading) return null;
 
-  if (SKIP_AUTH_FOR_DEV || isAuthenticated) {
+  if (isAuthenticated) {
     return (
       <DashboardLayout activePage={dashboardPage} onNavigate={setDashboardPage}>
         {dashboardPage === "Child Profiles" ? <ChildProfiles /> : <DashboardHome />}
