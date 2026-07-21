@@ -177,7 +177,7 @@ export default function DashboardHome() {
         </div>
       </section>
 
-      <section className="grid gap-6 xl:grid-cols-[1.2fr_0.8fr]">
+      <section className="space-y-6">
         <div className="rounded-[28px] border border-[#e4e7df] bg-white p-6 shadow-[0_12px_36px_rgba(15,23,42,0.05)]">
           <div className="flex flex-wrap items-start justify-between gap-4">
             <div>
