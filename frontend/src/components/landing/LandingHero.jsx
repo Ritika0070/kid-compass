@@ -23,12 +23,23 @@ export default function LandingHero({ onLoginClick }) {
   const { scrollYProgress } = useScroll({ target: heroRef, offset: ["start start", "end start"] });
   const rawHeadlineY = useTransform(scrollYProgress, [0, 1], [0, 300]);
   const headlineY = useSpring(rawHeadlineY, { stiffness: 120, damping: 22, mass: 0.4 });
- const rawImageScale = useTransform(scrollYProgress, [0, 1], [1.06, 1]);
+  const rawImageScale = useTransform(scrollYProgress, [0, 1], [1.06, 1]);
 
   const imageScale = useSpring(rawImageScale, {
     stiffness: 120,
     damping: 22,
     mass: 0.4,
+  });
+
+  // Tagline under the headline: fades out fast (first 15% of scroll) and
+  // back in on scroll-up. Deliberately NOT tied to headlineY — it's gone
+  // well before the headline has sunk far enough to reach this spot, so
+  // the two never fight over the same space.
+  const rawParagraphOpacity = useTransform(scrollYProgress, [0, 0.15], [1, 0]);
+  const paragraphOpacity = useSpring(rawParagraphOpacity, {
+    stiffness: 300,
+    damping: 30,
+    mass: 0.3,
   });
 
   // Shared spring for hover/tap scale — critically-damped enough that it
@@ -140,6 +151,30 @@ export default function LandingHero({ onLoginClick }) {
           }}
         >
           builds a bright future
+        </motion.p>
+
+        {/* Tagline — sits between the headline and the CTA button.
+            Independent of headlineY: fades out over the first 15% of
+            scroll (see rawParagraphOpacity above) so it's fully gone
+            before the headline sinks far enough to overlap it, and
+            reappears cleanly on scroll-up. */}
+        <motion.p
+          className="absolute z-10 m-0"
+          style={{
+            left: cqw(114),
+            top: cqh(330),
+            width: cqw(480),
+            fontFamily: "'Baloo 2', cursive",
+            fontWeight: 500,
+            fontSize: cqw(21),
+            lineHeight: 1.3,
+            color: "#FFFFFF",
+            textShadow: "0 2px 6px rgba(0,0,0,0.2)",
+            opacity: paragraphOpacity,
+          }}
+        >
+          This is a safe and fun place where children play, explore, and discover themselves.
+          <br />Our AI friend helps understand their strengths, interests and emotions.
         </motion.p>
       </section>
 
@@ -267,7 +302,7 @@ export default function LandingHero({ onLoginClick }) {
               position: "absolute",
               left: ocqw(177),
               right: ocqw(20),
-              top: 0,
+              top: -1,
               height: "100%",
               display: "flex",
               flexDirection: "column",
@@ -330,7 +365,7 @@ export default function LandingHero({ onLoginClick }) {
               position: "absolute",
               left: ocqw(28),
               top: ocqh(29),
-              width: ocqw(115.93),
+              width: ocqw(115),
               height: ocqh(115),
               objectFit: "contain",
             }}
@@ -340,7 +375,7 @@ export default function LandingHero({ onLoginClick }) {
               position: "absolute",
               left: ocqw(164),
               right: ocqw(20),
-              top: 0,
+              top: -2,
               height: "100%",
               display: "flex",
               flexDirection: "column",
@@ -349,7 +384,7 @@ export default function LandingHero({ onLoginClick }) {
           >
             <p
               className="m-0"
-              style={{ fontFamily: "'Baloo 2', cursive", fontWeight: 800, fontSize: ocqw(25), color: "#212020" }}
+              style={{ fontFamily: "'Baloo 2', cursive", fontWeight: 800, fontSize: ocqw(26), color: "#212020" }}
             >
               Go on Adventures
             </p>
@@ -414,7 +449,7 @@ export default function LandingHero({ onLoginClick }) {
               position: "absolute",
               left: ocqw(159),
               right: ocqw(20),
-              top: 0,
+              top: -2,
               height: "100%",
               display: "flex",
               flexDirection: "column",
@@ -423,7 +458,7 @@ export default function LandingHero({ onLoginClick }) {
           >
             <p
               className="m-0"
-              style={{ fontFamily: "'Baloo 2', cursive", fontWeight: 800, fontSize: ocqw(24), color: "#212020" }}
+              style={{ fontFamily: "'Baloo 2', cursive", fontWeight: 800, fontSize: ocqw(25), color: "#212020" }}
             >
               We Collect Insights
             </p>
@@ -590,10 +625,10 @@ export default function LandingHero({ onLoginClick }) {
             not on a panel). Only plant (slot 3) and robot (slot 4) have
             art in Figma — 1 & 2 stay empty white rounded boxes. */}
         {[
-          { icon: null },
-          { icon: null },
-          { icon: "/icon-plant.png" },
-          { icon: "/icon-robot.png" },
+          { icon: "/icon-palette.png", label: "Creative Arts" },
+          { icon: "/icon-rocket.png", label: "Space Explorer" },
+          { icon: "/icon-plant.png", label: "Nature Lover" },
+          { icon: "/icon-robot.png", label: "Tech Innovator" },
         ].map((slot, i) => (
           <div
             key={i}
@@ -605,18 +640,40 @@ export default function LandingHero({ onLoginClick }) {
               height: ocqh(145),
               backgroundColor: "#FFFFFF",
               borderRadius: "11px",
+
               display: "flex",
+              flexDirection: "column",
               alignItems: "center",
               justifyContent: "center",
+              gap: ocqh(10),
             }}
           >
-            {slot.icon && (
-              <img
-                src={slot.icon}
-                alt=""
-                style={{ width: "70%", height: "70%", objectFit: "contain" }}
-              />
-            )}
+            <img
+              src={slot.icon}
+              alt={slot.label}
+              style={{
+                width: "60%",
+                height: "60%",
+                objectFit: "contain",
+                transform: "translateY(-5px)",
+              }}
+            />
+
+            <p
+              style={{
+                margin: 0,
+                fontFamily: "'Baloo 2', cursive",
+                fontWeight: 800,
+                fontSize: ocqw(14),
+                color: "#212020",
+                textAlign: "center",
+                lineHeight: 1.15,
+                width: "85%",
+                transform: "translateY(-4px)",
+              }}
+            >
+              {slot.label}
+            </p>
           </div>
         ))}
       </motion.div>

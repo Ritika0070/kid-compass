@@ -1,6 +1,8 @@
-import { motion } from "framer-motion";
+import { useRef } from "react";
+import { motion, useScroll, useTransform, useSpring } from "framer-motion";
 import LandingHero from "./LandingHero";
 import FeatureCard from "./FeatureCard";
+import HowItWorks from "./HowItWorks";
 
 const FEATURES = [
   {
@@ -24,6 +26,20 @@ const FEATURES = [
 ];
 
 export default function LandingPage({ onLoginClick }) {
+  // Mobile hero tagline: same idea as the desktop version in LandingHero —
+  // fades out fast (first 15% of scroll) and back in on scroll-up.
+  const mobileHeroRef = useRef(null);
+  const { scrollYProgress: mobileScrollYProgress } = useScroll({
+    target: mobileHeroRef,
+    offset: ["start start", "end start"],
+  });
+  const rawMobileParagraphOpacity = useTransform(mobileScrollYProgress, [0, 0.15], [1, 0]);
+  const mobileParagraphOpacity = useSpring(rawMobileParagraphOpacity, {
+    stiffness: 300,
+    damping: 30,
+    mass: 0.3,
+  });
+
   return (
     <div className="w-full min-h-screen" style={{ backgroundColor: "#FCF8DD" }}>
       {/* ===========================
@@ -38,6 +54,7 @@ export default function LandingPage({ onLoginClick }) {
             instead of shrinking vertically
          =========================== */}
       <section
+        ref={mobileHeroRef}
         className="relative w-full overflow-hidden block md:hidden"
         style={{ height: "380px", borderRadius: "0 0 30px 30px" }}
       >
@@ -76,6 +93,32 @@ export default function LandingPage({ onLoginClick }) {
           >
             builds a bright future
           </p>
+
+          {/* Tagline — smaller font for mobile, same fast-fade-on-scroll
+              behavior as the desktop version, driven by mobileScrollYProgress
+              above. */}
+          <motion.p
+            className="m-0"
+            style={{
+              fontFamily: "'Baloo 2', cursive",
+              fontWeight: 500,
+              fontSize: "10px",
+              lineHeight: 1.35,
+              color: "#FFFFFF",
+              textShadow: "0 2px 6px rgba(0,0,0,0.2)",
+              marginTop: "8px",
+              maxWidth: "220px",
+              opacity: mobileParagraphOpacity,
+            }}
+          >
+            This is a safe and fun place where children play,
+            <br />
+            explore, and discover themselves.
+            <br />
+            Our AI friend helps understand their strengths,
+            <br />
+            interests and emotions.
+          </motion.p>
         </div>
 
         {/* Login / Sign Up — black outline only by default. No hover on
@@ -189,6 +232,10 @@ export default function LandingPage({ onLoginClick }) {
             </div>
           ))}
         </div>
+
+        <div className="relative -mt-12">
+        <HowItWorks />
+      </div>
       </div>
     </div>
   );
