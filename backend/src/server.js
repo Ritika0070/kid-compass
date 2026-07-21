@@ -3,6 +3,7 @@ import express from "express";
 import cors from "cors";
 import { connectDB } from "./config/db.js";
 import authRoutes from "./routes/auth.routes.js";
+import profileRoutes from "./routes/profile.routes.js";
 
 const app = express();
 
@@ -29,6 +30,7 @@ app.get("/health", (req, res) => {
 });
 
 app.use("/", authRoutes);
+app.use("/profile", profileRoutes);
 
 const PORT = process.env.PORT || 4000;
 

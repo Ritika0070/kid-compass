@@ -19,11 +19,22 @@ export const authApi = {
   signup: ({ name, email, password }) =>
     request("/signup", { method: "POST", body: JSON.stringify({ name, email, password }) }),
 
-  verify: ({ email, otp }) =>
-    request("/verify", { method: "POST", body: JSON.stringify({ email, otp }) }),
-
   login: ({ email, password }) =>
     request("/login", { method: "POST", body: JSON.stringify({ email, password }) }),
+};
+
+export const profileApi = {
+  get: (token) =>
+    request("/profile", {
+      headers: { Authorization: `Bearer ${token}` },
+    }),
+
+  save: (profile, token) =>
+    request("/profile", {
+      method: "PUT",
+      headers: { Authorization: `Bearer ${token}` },
+      body: JSON.stringify(profile),
+    }),
 };
 
 export function authHeader(token) {

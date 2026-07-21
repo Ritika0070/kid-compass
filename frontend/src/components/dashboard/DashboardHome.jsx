@@ -1,145 +1,73 @@
 import { useAuth } from "../../hooks/useAuth";
 
 const domains = [
-  {
-    name: "Logical / Analytical",
-    short: "Logic",
-    interest: "Puzzles, patterns, numbers, problem solving, strategy",
-    color: "#2563eb",
-  },
-  {
-    name: "Creative / Artistic",
-    short: "Creative",
-    interest: "Drawing, painting, imagination, colors, design, art",
-    color: "#9333ea",
-  },
-  {
-    name: "Verbal / Linguistic",
-    short: "Verbal",
-    interest: "Stories, reading, speaking, explaining ideas, vocabulary",
-    color: "#dc2626",
-  },
-  {
-    name: "Spatial / Visual",
-    short: "Spatial",
-    interest: "Blocks, maps, shapes, building, arranging, visual planning",
-    color: "#0891b2",
-  },
-  {
-    name: "Social / Interpersonal",
-    short: "Social",
-    interest: "Teamwork, friends, group activities, understanding people",
-    color: "#16a34a",
-  },
-  {
-    name: "Bodily / Kinesthetic",
-    short: "Movement",
-    interest: "Sports, dance, movement, physical activities, coordination",
-    color: "#d97706",
-  },
-  {
-    name: "Music / Rhythm",
-    short: "Music",
-    interest: "Singing, instruments, beats, rhythm, sound patterns",
-    color: "#db2777",
-  },
-  {
-    name: "Nature / Animals",
-    short: "Nature",
-    interest: "Animals, plants, gardening, environment, outdoor curiosity",
-    color: "#4d7c0f",
-  },
-  {
-    name: "Technology / Machines",
-    short: "Tech",
-    interest: "Gadgets, robots, coding, machines, how things work",
-    color: "#0f766e",
-  },
-  {
-    name: "Leadership / Organizing",
-    short: "Lead",
-    interest: "Planning, leading groups, decision-making, managing tasks",
-    color: "#7c3aed",
-  },
-  {
-    name: "Caregiving / Empathy",
-    short: "Care",
-    interest: "Caring for others, emotions, kindness, helping behavior",
-    color: "#ea580c",
-  },
+  { name: "Logical / Analytical", short: "Logic", interest: "Puzzles, patterns, numbers, strategy", color: "#2563eb" },
+  { name: "Creative / Artistic", short: "Creative", interest: "Drawing, imagination, colors, design", color: "#7c3aed" },
+  { name: "Verbal / Linguistic", short: "Verbal", interest: "Stories, reading, speaking, vocabulary", color: "#dc2626" },
+  { name: "Spatial / Visual", short: "Spatial", interest: "Blocks, maps, shapes, visual planning", color: "#0891b2" },
+  { name: "Social / Interpersonal", short: "Social", interest: "Teamwork, friends, understanding people", color: "#16a34a" },
+  { name: "Bodily / Kinesthetic", short: "Movement", interest: "Sports, dance, movement, coordination", color: "#d97706" },
+  { name: "Music / Rhythm", short: "Music", interest: "Singing, instruments, beats, rhythm", color: "#db2777" },
+  { name: "Nature / Animals", short: "Nature", interest: "Animals, plants, outdoor curiosity", color: "#4d7c0f" },
+  { name: "Technology / Machines", short: "Tech", interest: "Gadgets, robots, coding, machines", color: "#0f766e" },
+  { name: "Leadership / Organizing", short: "Lead", interest: "Planning, decisions, managing tasks", color: "#7c2d12" },
+  { name: "Caregiving / Empathy", short: "Care", interest: "Kindness, emotions, helping behavior", color: "#ea580c" },
 ];
 
-const roadmap = [
-  "Create child profile",
-  "Start first activity",
-  "Complete 3 domains",
-  "Review first parent insight",
-];
-
-function StatCard({ label, value, helper }) {
+function MetricCard({ label, value, helper }) {
   return (
-    <div className="rounded-2xl border border-[#e4e7df] bg-white p-5 shadow-sm transition hover:-translate-y-0.5 hover:shadow-md">
-      <p className="text-sm font-semibold text-[#6b7280]">{label}</p>
-      <p className="mt-3 text-3xl font-extrabold text-[#111827]">{value}</p>
-      <p className="mt-2 text-sm text-[#6b7280]">{helper}</p>
+    <div className="rounded-[22px] border border-[#e4e7df] bg-white p-5 shadow-[0_8px_28px_rgba(15,23,42,0.04)]">
+      <p className="text-sm font-semibold text-[#667085]">{label}</p>
+      <p className="mt-3 text-3xl font-black tracking-tight text-[#101828]">{value}</p>
+      <p className="mt-2 text-sm leading-5 text-[#667085]">{helper}</p>
     </div>
   );
 }
 
-function ProgressRing({ value = 0 }) {
-  const radius = 48;
-  const circumference = 2 * Math.PI * radius;
-  const strokeDashoffset = circumference - (value / 100) * circumference;
+function ProgressRing({ value }) {
+  const r = 46;
+  const c = 2 * Math.PI * r;
+  const offset = c - (value / 100) * c;
 
   return (
-    <div className="flex items-center gap-5">
-      <div className="relative h-32 w-32 shrink-0">
-        <svg viewBox="0 0 120 120" className="h-full w-full -rotate-90">
-          <circle cx="60" cy="60" r={radius} fill="none" stroke="#e5e9df" strokeWidth="12" />
-          <circle
-            cx="60"
-            cy="60"
-            r={radius}
-            fill="none"
-            stroke="#1f7a4d"
-            strokeWidth="12"
-            strokeLinecap="round"
-            strokeDasharray={circumference}
-            strokeDashoffset={strokeDashoffset}
-          />
-        </svg>
-
-        <div className="absolute inset-0 flex flex-col items-center justify-center">
-          <span className="text-3xl font-extrabold text-[#111827]">{value}%</span>
-          <span className="text-xs font-semibold text-[#6b7280]">complete</span>
-        </div>
-      </div>
-
-      <div>
-        <h3 className="text-lg font-extrabold text-[#111827]">Assessment Progress</h3>
-        <p className="mt-2 text-sm leading-6 text-[#6b7280]">
-          Progress will update as each domain activity is completed.
-        </p>
+    <div className="relative h-32 w-32">
+      <svg viewBox="0 0 120 120" className="h-full w-full -rotate-90">
+        <circle cx="60" cy="60" r={r} fill="none" stroke="#e8ece2" strokeWidth="12" />
+        <circle
+          cx="60"
+          cy="60"
+          r={r}
+          fill="none"
+          stroke="#1f7a4d"
+          strokeWidth="12"
+          strokeLinecap="round"
+          strokeDasharray={c}
+          strokeDashoffset={offset}
+        />
+      </svg>
+      <div className="absolute inset-0 flex flex-col items-center justify-center">
+        <span className="text-3xl font-black text-[#101828]">{value}%</span>
+        <span className="text-xs font-bold text-[#667085]">done</span>
       </div>
     </div>
   );
 }
 
-function DomainBarChart() {
+function DomainBars() {
   return (
-    <div className="h-80 overflow-x-auto">
-      <div className="flex h-full min-w-[760px] items-end gap-3 border-b border-l border-[#e4e7df] px-2 pb-4">
+    <div className="overflow-x-auto">
+      <div className="flex h-72 min-w-[820px] items-end gap-3 rounded-2xl bg-[#fafbf7] px-4 pb-5 pt-5">
         {domains.map((domain) => (
           <div key={domain.name} className="flex h-full min-w-0 flex-1 flex-col justify-end">
-            <div className="relative flex flex-1 items-end justify-center">
-              <div className="h-full w-full max-w-[36px] rounded-t-2xl bg-[#eef1e8]" />
-              <div
-                className="absolute bottom-0 h-1 w-full max-w-[36px] rounded-t-2xl"
-                style={{ backgroundColor: domain.color }}
-              />
+            <div className="flex flex-1 items-end justify-center">
+              <div className="relative h-full w-full max-w-[38px] overflow-hidden rounded-t-2xl bg-[#e8ece2]">
+                <div
+                  className="absolute bottom-0 h-1.5 w-full rounded-t-2xl"
+                  style={{ backgroundColor: domain.color }}
+                />
+              </div>
             </div>
-
-            <p className="mt-3 truncate text-center text-xs font-bold text-[#6b7280]">
+            <p className="mt-3 truncate text-center text-xs font-black text-[#667085]">
               {domain.short}
             </p>
           </div>
@@ -149,115 +77,50 @@ function DomainBarChart() {
   );
 }
 
-function RadarChart() {
-  const center = 105;
-  const levels = [82, 58, 34];
-
+function DomainGrid() {
   return (
-    <div className="flex items-center justify-center">
-      <svg viewBox="0 0 210 210" className="h-72 w-full max-w-[330px]">
-        {levels.map((size) => (
-          <polygon
-            key={size}
-            points={domains
-              .map((_, index) => {
-                const angle = (Math.PI * 2 * index) / domains.length - Math.PI / 2;
-                return `${center + Math.cos(angle) * size},${center + Math.sin(angle) * size}`;
-              })
-              .join(" ")}
-            fill="none"
-            stroke="#dde4d4"
-            strokeWidth="1"
-          />
-        ))}
-
-        {domains.map((domain, index) => {
-          const angle = (Math.PI * 2 * index) / domains.length - Math.PI / 2;
-          const x = center + Math.cos(angle) * 90;
-          const y = center + Math.sin(angle) * 90;
-          const labelX = center + Math.cos(angle) * 101;
-          const labelY = center + Math.sin(angle) * 101;
-
-          return (
-            <g key={domain.name}>
-              <line x1={center} y1={center} x2={x} y2={y} stroke="#e4e7df" />
-              <circle cx={x} cy={y} r="3.5" fill={domain.color} />
-              <text
-                x={labelX}
-                y={labelY}
-                textAnchor="middle"
-                dominantBaseline="middle"
-                fontSize="7.5"
-                fontWeight="700"
-                fill="#6b7280"
-              >
-                {domain.short}
-              </text>
-            </g>
-          );
-        })}
-
-        <text x="105" y="109" textAnchor="middle" fontSize="12" fontWeight="800" fill="#111827">
-          Pending
-        </text>
-      </svg>
-    </div>
-  );
-}
-
-function TimelineChart() {
-  return (
-    <div className="space-y-4">
-      {roadmap.map((item, index) => {
-        const done = index === 0;
-
-        return (
-          <div key={item} className="flex gap-4">
-            <div className="flex flex-col items-center">
+    <div className="grid gap-3 md:grid-cols-2 xl:grid-cols-3">
+      {domains.map((domain) => (
+        <div
+          key={domain.name}
+          className="rounded-2xl border border-[#edf0e8] bg-white p-4 shadow-[0_6px_18px_rgba(15,23,42,0.03)] transition hover:-translate-y-0.5 hover:shadow-[0_12px_28px_rgba(15,23,42,0.07)]"
+        >
+          <div className="flex items-start gap-3">
+            <div
+              className="mt-0.5 h-10 w-10 shrink-0 rounded-2xl"
+              style={{ backgroundColor: `${domain.color}18` }}
+            >
               <div
-                className={`flex h-9 w-9 items-center justify-center rounded-full text-sm font-extrabold ${
-                  done ? "bg-[#1f7a4d] text-white" : "bg-[#eef1e8] text-[#6b7280]"
-                }`}
-              >
-                {index + 1}
-              </div>
-              {index < roadmap.length - 1 && <div className="mt-2 h-8 w-px bg-[#e4e7df]" />}
+                className="m-auto mt-[9px] h-[22px] w-[22px] rounded-full"
+                style={{ backgroundColor: domain.color }}
+              />
             </div>
 
-            <div className="pt-1">
-              <p className="font-bold text-[#111827]">{item}</p>
-              <p className="mt-1 text-sm text-[#6b7280]">{done ? "Completed" : "Pending"}</p>
+            <div className="min-w-0">
+              <div className="flex items-start justify-between gap-2">
+                <h3 className="text-sm font-black text-[#101828]">{domain.name}</h3>
+                <span className="rounded-full bg-[#f4f6f0] px-2.5 py-1 text-xs font-black text-[#667085]">
+                  --
+                </span>
+              </div>
+              <p className="mt-1 text-sm leading-5 text-[#667085]">{domain.interest}</p>
+              <div className="mt-3 h-2 rounded-full bg-[#e8ece2]">
+                <div className="h-2 w-0 rounded-full" style={{ backgroundColor: domain.color }} />
+              </div>
             </div>
           </div>
-        );
-      })}
+        </div>
+      ))}
     </div>
   );
 }
 
-function DomainCard({ domain }) {
+function EmptyStateBox() {
   return (
-    <div className="rounded-2xl border border-[#edf0e8] bg-[#fbfcf8] p-4 transition hover:-translate-y-0.5 hover:border-[#d8ddd1] hover:bg-white hover:shadow-sm">
-      <div className="flex items-start justify-between gap-3">
-        <div>
-          <h3 className="font-extrabold text-[#111827]">{domain.name}</h3>
-          <p className="mt-1 text-sm leading-5 text-[#6b7280]">{domain.interest}</p>
-        </div>
-
-        <span
-          className="rounded-full px-3 py-1 text-sm font-extrabold"
-          style={{ backgroundColor: `${domain.color}14`, color: domain.color }}
-        >
-          --
-        </span>
-      </div>
-
-      <div className="mt-4 h-2 rounded-full bg-[#e5e9df]">
-        <div className="h-2 w-0 rounded-full" style={{ backgroundColor: domain.color }} />
-      </div>
-
-      <p className="mt-3 text-sm leading-6 text-[#5f6673]">
-        Complete this domain activity to generate a score.
+    <div className="rounded-2xl border border-dashed border-[#d7ddcf] bg-[#fafbf7] p-6">
+      <p className="font-black text-[#101828]">No sessions yet</p>
+      <p className="mt-2 text-sm leading-6 text-[#667085]">
+        Once activities are completed, real scores, strengths, and insights will appear here.
       </p>
     </div>
   );
@@ -268,129 +131,121 @@ export default function DashboardHome() {
   const childName = user?.name || "Your child";
 
   const completedDomains = 0;
-  const progressPercent = Math.round((completedDomains / domains.length) * 100);
+  const progress = Math.round((completedDomains / domains.length) * 100);
 
   return (
     <div className="mx-auto max-w-7xl space-y-6">
-      <section className="grid gap-5 xl:grid-cols-[1.4fr_0.9fr]">
-        <div className="rounded-3xl border border-[#e4e7df] bg-white p-6 shadow-sm">
-          <div className="flex flex-col justify-between gap-5 md:flex-row md:items-start">
-            <div>
-              <p className="text-sm font-bold uppercase tracking-[0.14em] text-[#1f7a4d]">
-                Child Profile
-              </p>
+      <section className="overflow-hidden rounded-[28px] border border-[#dfe6d7] bg-white shadow-[0_18px_50px_rgba(15,23,42,0.06)]">
+        <div className="grid gap-0 xl:grid-cols-[1.35fr_0.65fr]">
+          <div className="p-7 sm:p-8">
 
-              <h1
-                className="mt-2 text-4xl font-extrabold text-[#111827]"
-                style={{ fontFamily: "'Baloo 2', cursive" }}
-              >
-                {childName}'s Interest Snapshot
-              </h1>
+            <h1
+              className="mt-5 max-w-3xl text-4xl font-black tracking-tight text-[#101828] sm:text-5xl"
+              style={{ fontFamily: "'Baloo 2', cursive" }}
+            >
+              {childName}'s Interest Snapshot
+            </h1>
 
-              <p className="mt-3 max-w-2xl text-base leading-7 text-[#5f6673]">
-                Track current interests across 11 domains. Scores will appear only after
-                activities are completed.
-              </p>
+            <p className="mt-4 max-w-3xl text-base leading-7 text-[#667085]">
+              A clean view of current curiosity across 11 domains. The dashboard stays empty until
+              real activities are completed, so parents never see fake scores.
+            </p>
+
+            <div className="mt-7 grid gap-4 sm:grid-cols-3">
+              <MetricCard label="Domains Completed" value={`${completedDomains}/${domains.length}`} helper="Across all interest areas" />
+              <MetricCard label="Top Interest" value="Pending" helper="Available after assessments" />
+              <MetricCard label="Confidence" value="Pending" helper="After Talk with Buddy" />
             </div>
+          </div>
 
-            <div className="rounded-2xl bg-[#f6f7f4] px-5 py-4">
-              <p className="text-sm font-semibold text-[#6b7280]">Assessment status</p>
-              <p className="mt-1 text-xl font-extrabold text-[#111827]">Not started</p>
-              <p className="mt-1 text-sm text-[#6b7280]">No domain data yet</p>
+          <div className="border-t border-[#e4e7df] bg-[#eef7e8] p-7 sm:p-8 xl:border-l xl:border-t-0">
+            <p className="text-sm font-black uppercase tracking-[0.14em] text-[#1f7a4d]">
+              Assessment status
+            </p>
+
+            <div className="mt-7 flex items-center justify-between gap-5 xl:flex-col xl:items-start">
+              <ProgressRing value={progress} />
+
+              <div>
+                <p className="text-2xl font-black text-[#101828]">Not started</p>
+                <p className="mt-2 text-sm leading-6 text-[#667085]">
+                  Start the first activity to build this child's interest profile.
+                </p>
+              </div>
             </div>
           </div>
         </div>
-
-        <div className="rounded-3xl border border-[#dce8d3] bg-[#eef7e8] p-6 shadow-sm">
-          <p className="text-sm font-bold uppercase tracking-[0.14em] text-[#1f7a4d]">
-            Parent Insight
-          </p>
-
-          <p className="mt-4 text-lg font-semibold leading-7 text-[#223226]">
-            No insight is available yet. Once {childName} completes activities,
-            this area will summarize current strengths and curiosity patterns.
-          </p>
-
-          <p className="mt-4 text-sm leading-6 text-[#5f6673]">
-            These are current observations, not career predictions.
-          </p>
-        </div>
       </section>
 
-      <section className="grid gap-5 sm:grid-cols-2 xl:grid-cols-4">
-        <StatCard label="Domains Completed" value={`${completedDomains}/${domains.length}`} helper="Across all interest areas" />
-        <StatCard label="Rewards Earned" value="0" helper="Earned after completed activities" />
-        <StatCard label="Top Interest" value="Pending" helper="Available after assessments" />
-        <StatCard label="Confidence" value="Pending" helper="After Talk with Buddy" />
-      </section>
-
-      <section className="grid gap-6 xl:grid-cols-[0.9fr_1.25fr_0.85fr]">
-        <div className="rounded-3xl border border-[#e4e7df] bg-white p-6 shadow-sm">
-          <ProgressRing value={progressPercent} />
-        </div>
-
-        <div className="rounded-3xl border border-[#e4e7df] bg-white p-6 shadow-sm">
-          <div className="flex items-start justify-between gap-4">
+      <section className="grid gap-6 xl:grid-cols-[1.2fr_0.8fr]">
+        <div className="rounded-[28px] border border-[#e4e7df] bg-white p-6 shadow-[0_12px_36px_rgba(15,23,42,0.05)]">
+          <div className="flex flex-wrap items-start justify-between gap-4">
             <div>
-              <h2 className="text-xl font-extrabold text-[#111827]">Domain Score Chart</h2>
-              <p className="mt-1 text-sm text-[#6b7280]">
-                11 domains will be compared here after tests.
+              <h2 className="text-2xl font-black text-[#101828]">Domain Score Chart</h2>
+              <p className="mt-1 text-sm text-[#667085]">
+                Scores will appear here after each domain activity.
               </p>
             </div>
-            <span className="rounded-full bg-[#f6f7f4] px-3 py-1 text-xs font-bold text-[#6b7280]">
+            <span className="rounded-full bg-[#f4f6f0] px-3 py-1 text-xs font-black text-[#667085]">
               0 records
             </span>
           </div>
 
           <div className="mt-6">
-            <DomainBarChart />
+            <DomainBars />
           </div>
         </div>
 
-        <div className="rounded-3xl border border-[#e4e7df] bg-white p-6 shadow-sm">
-          <h2 className="text-xl font-extrabold text-[#111827]">Journey Timeline</h2>
-          <p className="mt-1 text-sm text-[#6b7280]">Next milestones</p>
+        <div className="rounded-[28px] border border-[#e4e7df] bg-white p-6 shadow-[0_12px_36px_rgba(15,23,42,0.05)]">
+          <h2 className="text-2xl font-black text-[#101828]">Parent Insight</h2>
+          <p className="mt-3 text-base font-semibold leading-7 text-[#344054]">
+            No insight is available yet. Once {childName} completes activities, this section will
+            summarize current interests in simple parent-friendly language.
+          </p>
 
-          <div className="mt-6">
-            <TimelineChart />
+          <div className="mt-6 rounded-2xl bg-[#fafbf7] p-5">
+            <p className="text-sm font-black text-[#101828]">Scoring rule</p>
+            <p className="mt-2 text-sm leading-6 text-[#667085]">
+              A domain should count as a strength only when performance and engagement are both high.
+            </p>
           </div>
         </div>
       </section>
 
-      <section className="grid gap-6 xl:grid-cols-[0.95fr_1.35fr]">
-        <div className="rounded-3xl border border-[#e4e7df] bg-white p-6 shadow-sm">
-          <h2 className="text-xl font-extrabold text-[#111827]">Interest Radar</h2>
-          <p className="mt-1 text-sm text-[#6b7280]">
-            A full interest shape will appear after enough data is collected.
-          </p>
-
-          <div className="mt-4">
-            <RadarChart />
+      <section className="rounded-[28px] border border-[#e4e7df] bg-white p-6 shadow-[0_12px_36px_rgba(15,23,42,0.05)]">
+        <div className="flex flex-wrap items-end justify-between gap-4">
+          <div>
+            <h2 className="text-2xl font-black text-[#101828]">Interest Domains</h2>
+            <p className="mt-1 text-sm text-[#667085]">
+              These are the 11 areas the assessment will explore.
+            </p>
           </div>
         </div>
 
-        <div className="rounded-3xl border border-[#e4e7df] bg-white p-6 shadow-sm">
-          <h2 className="text-xl font-extrabold text-[#111827]">Interest Domains</h2>
-          <p className="mt-1 text-sm text-[#6b7280]">
-            Each domain maps to a different type of curiosity or strength.
-          </p>
-
-          <div className="mt-6 grid gap-4 md:grid-cols-2">
-            {domains.map((domain) => (
-              <DomainCard key={domain.name} domain={domain} />
-            ))}
-          </div>
+        <div className="mt-6">
+          <DomainGrid />
         </div>
       </section>
 
-      <section className="rounded-3xl border border-[#e4e7df] bg-white p-6 shadow-sm">
-        <h2 className="text-xl font-extrabold text-[#111827]">Recent Sessions</h2>
+      <section className="grid gap-6 xl:grid-cols-[0.8fr_1.2fr]">
+        <div className="rounded-[28px] border border-[#e4e7df] bg-white p-6 shadow-[0_12px_36px_rgba(15,23,42,0.05)]">
+          <h2 className="text-2xl font-black text-[#101828]">Confidence Snapshot</h2>
+          <p className="mt-1 text-sm text-[#667085]">Separate from interest scores.</p>
 
-        <div className="mt-5 rounded-2xl border border-dashed border-[#d8ddd1] bg-[#fbfcf8] p-6 text-center">
-          <p className="font-bold text-[#111827]">No sessions yet</p>
-          <p className="mt-2 text-sm leading-6 text-[#6b7280]">
-            Completed activities, scores, and insights will appear here.
-          </p>
+          <div className="mt-6 rounded-2xl bg-[#fafbf7] p-5">
+            <p className="text-sm font-semibold text-[#667085]">Communication Style</p>
+            <p className="mt-2 text-2xl font-black text-[#101828]">Pending</p>
+            <p className="mt-2 text-sm leading-6 text-[#667085]">
+              Complete Talk with Buddy to generate this section.
+            </p>
+          </div>
+        </div>
+
+        <div className="rounded-[28px] border border-[#e4e7df] bg-white p-6 shadow-[0_12px_36px_rgba(15,23,42,0.05)]">
+          <h2 className="text-2xl font-black text-[#101828]">Recent Sessions</h2>
+          <div className="mt-5">
+            <EmptyStateBox />
+          </div>
         </div>
       </section>
     </div>
