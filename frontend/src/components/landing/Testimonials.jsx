@@ -33,7 +33,7 @@ const ccqh = (px) => `${((px / CARD_HEIGHT) * 100).toFixed(3)}cqh`;
 // own top-left (card1 = X33,Y80), so they apply identically to any slot.
 const AVATAR_OFFSET = { left: 19, top: 32, size: 124 };
 const STAR_OFFSET = { left: 172, top: 18, size: 27, spacing: 26 };
-const QUOTE_OFFSET = { left: 174, top: 54, width: 180 };
+const QUOTE_OFFSET = { left: 174, top: 64, width: 195 };
 const AUTHOR_OFFSET = { left: 174, top: 146, width: 115 };
 
 // 6 reviews, looping 3-at-a-time carousel.
@@ -142,7 +142,7 @@ function ReviewCardContent({ review }) {
           width: ccqw(QUOTE_OFFSET.width),
           fontFamily: "'Baloo 2', cursive",
           fontWeight: 500,
-          fontSize: ccqw(13),
+          fontSize: ccqw(15),
           lineHeight: 1.35,
           color: "#3A3A3A",
         }}
@@ -158,7 +158,7 @@ function ReviewCardContent({ review }) {
           width: ccqw(AUTHOR_OFFSET.width),
           fontFamily: "'Baloo 2', cursive",
           fontWeight: 700,
-          fontSize: ccqw(13),
+          fontSize: ccqw(16),
           color: "#96C015",
           whiteSpace: "nowrap",
         }}

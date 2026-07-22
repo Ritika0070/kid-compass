@@ -9,6 +9,7 @@ const SECTION_IDS = {
   "How It Works": "how-it-works",
   "For Parents": "for-parents",
   "Testimonials": "testimonials",
+  "About Us": "about-us"
 };
 
 // easeInOutCubic — slow start, fast middle, slow gentle finish.

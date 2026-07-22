@@ -5,6 +5,8 @@ import FeatureCard from "./FeatureCard";
 import HowItWorks from "./HowItWorks";
 import ForParents from "./ForParents";
 import Testimonials from "./Testimonials";
+import FAQSection from "./FAQSection";
+import Footer from "./Footer";
 
 const FEATURES = [
   {
@@ -240,8 +242,9 @@ export default function LandingPage({ onLoginClick }) {
       </div>
       <ForParents onExploreClick={() => {/* route to dashboard */}} />
       <Testimonials />
-
+      <FAQSection />
       </div>
+      <Footer />
     </div>
   );
 }
