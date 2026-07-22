@@ -3,6 +3,8 @@ import { motion, useScroll, useTransform, useSpring } from "framer-motion";
 import LandingHero from "./LandingHero";
 import FeatureCard from "./FeatureCard";
 import HowItWorks from "./HowItWorks";
+import ForParents from "./ForParents";
+import Testimonials from "./Testimonials";
 
 const FEATURES = [
   {
@@ -236,6 +238,9 @@ export default function LandingPage({ onLoginClick }) {
         <div className="relative -mt-12">
         <HowItWorks />
       </div>
+      <ForParents onExploreClick={() => {/* route to dashboard */}} />
+      <Testimonials />
+
       </div>
     </div>
   );

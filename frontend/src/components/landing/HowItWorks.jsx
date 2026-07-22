@@ -1,3 +1,4 @@
+import { useLayoutEffect, useRef, useState, useCallback } from "react";
 import { motion } from "framer-motion";
 
 const STEPS = [
@@ -9,9 +10,13 @@ const STEPS = [
     bg: "#F5F5C3",
     stroke: "#D6DE91",
     badgeBg: "#A1C711",
-    imageHeight: 270,
-    imageTop: 117,
+    imageHeight: 290,
+    imageTop: 118,
     imageLeft: 50,
+    offset: {
+      laptop: { x: -35, y: 0 },
+      wide: { x: -150, y: 0 },
+    },
   },
   {
     number: 2,
@@ -24,6 +29,10 @@ const STEPS = [
     imageHeight: 320,
     imageTop: 100,
     imageLeft: 34,
+    offset: {
+      laptop: { x: 0, y: 0 },
+      wide: { x: 0, y: 0 },
+    },
   },
   {
     number: 3,
@@ -35,33 +44,139 @@ const STEPS = [
     badgeBg: "#A070B9",
     imageHeight: 320,
     imageTop: 70,
-    imageLeft: 85,
+    imageLeft: 83,
     titleWidth: 180,
     descriptionWidth: 125,
     descriptionAlign: "left",
     descriptionLeft: 10,
+    offset: {
+      laptop: { x: 0, y: 0 },
+      wide: { x: 100, y: 0 },
+    },
   },
 ];
 
-// Native design was built at a 272x369 card. Every internal offset below is
-// expressed as a % of the CARD'S OWN WIDTH ("cqw" = container query width
-// units), computed as (originalPx / 272) * 100. Because the card's
-// aspect-ratio is locked to 272/369, scaling the width by any factor s also
-// scales the height by s automatically — so a value expressed as %-of-width
-// scales identically to how it would if you'd scaled the original px value
-// by s directly. That reproduces the hand-tuned 1440px design pixel-for-
-// pixel at any card size, with zero JS and zero transform tricks.
 const cqw = (px) => `${((px / 272) * 100).toFixed(2)}cqw`;
 
-// Card width itself scales with viewport, same pattern as the heading above
-// (clamp(30px, 5vw, 48px)): 272px at a 1440px viewport = 18.9vw.
-const CARD_WIDTH_EXPR = "clamp(190px, 18.9vw, 460px)";
+const CARD_WIDTH_MIN = 180;
+const CARD_WIDTH_MAX = 460;
+const CARD_WIDTH_VW = 18.9;
+const CARD_WIDTH_EXPR = `clamp(${CARD_WIDTH_MIN}px, ${CARD_WIDTH_VW}vw, ${CARD_WIDTH_MAX}px)`;
 const CARD_ASPECT_RATIO = "272 / 369";
 const CARD_GAP_EXPR = "clamp(20px, 8vw, 125px)";
+const LAPTOP_MIN = 768;
+const WIDE_MIN = 1920;
+
+// Card entrance timing — shared constants so a connector's own entrance
+// can reuse the EXACT same duration/stagger/ease as the card it's
+// attached to, instead of drifting out of sync.
+const CARD_DURATION = 0.55;
+const CARD_STAGGER = 0.3;
+const CARD_EASE = [0.33, 1, 0.68, 1];
+const CONNECTOR_START_DELAY = 0.5;
+
+const cardScale = (px) =>
+  `clamp(${((px * CARD_WIDTH_MIN) / 272).toFixed(1)}px, ${((px * CARD_WIDTH_VW) / 272).toFixed(3)}vw, ${((px * CARD_WIDTH_MAX) / 272).toFixed(1)}px)`;
+
+
+const vector = [
+  {
+    src: "/vector/loop-pre-card1.svg", // Vector 6 — decorative loop to the left of card 1
+    anchor: { cardIndex: 0, side: "left" },
+    syncCardIndex: 0,
+    nativeWidth: 120,
+    gapOffset: -0.4,
+    yRatio: 0.5,
+  },
+  {
+    src: "/vector/connector-1-2.svg", // Component 9 — between card 1 and card 2
+    nativeWidth: 180,
+    anchor: { cardIndex: 0, side: "right" },
+    syncCardIndex: 1,
+    gapOffset: 0.59,
+    yRatio: 0.25,
+  },
+  {
+    src: "/vector/connector-2-3.svg", // Vector 9 — between card 2 and card 3
+    nativeWidth: 220,
+    anchor: { cardIndex: 1, side: "right" },
+    syncCardIndex: 2,
+    gapOffset: 0.7,
+    yRatio: 0.6,
+  },
+];
 
 export default function HowItWorks() {
+  const rowRef = useRef(null);
+  const cardRefs = useRef([]);
+  const [connectorPos, setConnectorPos] = useState([]);
+
+  const measure = useCallback(() => {
+    const row = rowRef.current;
+    if (!row) return;
+    const rowRect = row.getBoundingClientRect();
+
+    const cardRects = cardRefs.current.map((el) => {
+      if (!el) return null;
+      const r = el.getBoundingClientRect();
+      return {
+        left: r.left - rowRect.left,
+        right: r.right - rowRect.left,
+        top: r.top - rowRect.top,
+        height: r.height,
+      };
+    });
+
+    let gapPx = 0;
+    if (cardRects[0] && cardRects[1]) {
+      gapPx = cardRects[1].left - cardRects[0].right;
+    }
+
+    const positions = vector.map((c) => {
+      const rect = cardRects[c.anchor.cardIndex];
+      if (!rect) return null;
+      const edgeX = c.anchor.side === "left" ? rect.left : rect.right;
+      return {
+        left: edgeX + c.gapOffset * gapPx,
+        top: rect.top + c.yRatio * rect.height,
+      };
+    });
+
+    setConnectorPos(positions);
+  }, []);
+
+  useLayoutEffect(() => {
+    const raf = requestAnimationFrame(measure);
+
+    const ro = new ResizeObserver(() => measure());
+    if (rowRef.current) ro.observe(rowRef.current);
+
+    window.addEventListener("resize", measure);
+
+    return () => {
+      cancelAnimationFrame(raf);
+      ro.disconnect();
+      window.removeEventListener("resize", measure);
+    };
+  }, [measure]);
+
   return (
     <section id="how-it-works" className="w-full px-4 md:px-8 py-14 md:py-24">
+      <style>{`
+        ${STEPS.map((s) => `
+          @media (min-width: ${LAPTOP_MIN}px) {
+            .how-card-${s.number} {
+              transform: translate(${s.offset?.laptop?.x ?? 0}px, ${s.offset?.laptop?.y ?? 0}px);
+            }
+          }
+          @media (min-width: ${WIDE_MIN}px) {
+            .how-card-${s.number} {
+              transform: translate(${s.offset?.wide?.x ?? 0}px, ${s.offset?.wide?.y ?? 0}px);
+            }
+          }
+        `).join("\n")}
+      `}</style>
+
       <div className="text-center max-w-2xl mx-auto mb-10 md:mb-16">
         <h2
           className="m-0"
@@ -90,33 +205,32 @@ export default function HowItWorks() {
         </p>
       </div>
 
-      {/* Stacks on mobile (flex-col), row on md+. Gap scales with viewport
-          via clamp() instead of a fixed 125px that only made sense at 1440. */}
       <div
-        className="flex flex-col md:flex-row items-center md:items-stretch justify-center mx-auto"
-        style={{ gap: CARD_GAP_EXPR, maxWidth: "1400px" }}
+        ref={rowRef}
+        className="relative flex flex-col md:flex-row items-center md:items-stretch justify-center mx-auto"
+        style={{ gap: CARD_GAP_EXPR, width: "fit-content", maxWidth: "1650px" }}
       >
         {STEPS.map((step, i) => (
           <div
             key={step.number}
-            // This div is the "container" that cqw units below resolve
-            // against — it's the ONLY place width is ever set in px/vw.
+            ref={(el) => (cardRefs.current[i] = el)}
+            className={`how-card-${step.number}`}
             style={{
               containerType: "inline-size",
               width: CARD_WIDTH_EXPR,
               aspectRatio: CARD_ASPECT_RATIO,
               flexShrink: 0,
+              position: "relative",
+              zIndex: 1,
             }}
           >
-            {/* motion.div: animation ONLY, exactly like FeatureCard.
-                No transform/scale set here, so nothing conflicts with
-                Framer Motion's own transform management. */}
             <motion.div
               className="relative w-full h-full"
               initial={{ y: 60, opacity: 0 }}
               whileInView={{ y: 0, opacity: 1 }}
               viewport={{ once: true, amount: 0.35 }}
-              transition={{ duration: 0.55, delay: i * 0.12, ease: [0.33, 1, 0.68, 1] }}
+              transition={{ duration: CARD_DURATION, delay: i * CARD_STAGGER, ease: CARD_EASE }}
+              onAnimationComplete={measure}
               style={{
                 backgroundColor: step.bg,
                 borderRadius: cqw(32),
@@ -204,7 +318,7 @@ export default function HowItWorks() {
                 style={{
                   position: "absolute",
                   top: cqw(step.imageTop),
-                  left: `${step.imageLeft ?? 50}%`, // already a % of card width, unchanged
+                  left: `${step.imageLeft ?? 50}%`,
                   transform: "translateX(-50%)",
                   height: cqw(step.imageHeight),
                   width: "auto",
@@ -216,6 +330,38 @@ export default function HowItWorks() {
             </motion.div>
           </div>
         ))}
+
+     
+        <div className="absolute inset-0 hidden lg:block pointer-events-none" style={{ zIndex: 2 }}>
+          {vector.map((c, i) => {
+            const pos = connectorPos[i];
+            if (!pos) return null;
+            return (
+              <motion.img
+                key={i}
+                src={c.src}
+                alt=""
+                initial={{ opacity: 0, y: 20 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true, amount: 0.35 }}
+                transition={{
+                duration: CARD_DURATION,
+                delay: CONNECTOR_START_DELAY + i * CARD_STAGGER,
+                ease: CARD_EASE,
+              }}
+                style={{
+                  position: "absolute",
+                  left: pos.left,
+                  top: pos.top,
+                  translateX: "-50%",
+                  translateY: "-50%",
+                  width: cardScale(c.nativeWidth),
+                  height: "auto",
+                }}
+              />
+            );
+          })}
+        </div>
       </div>
     </section>
   );

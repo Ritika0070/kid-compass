@@ -1,12 +1,14 @@
 import { useState } from "react";
 import { motion } from "framer-motion";
 
-const NAV_ITEMS = ["Home", "About Us", "How It Works", "For Parents", "Blog"];
+const NAV_ITEMS = ["Home", "About Us", "How It Works", "For Parents", "Testimonials"];
 
 // Maps nav labels to the section id they should scroll to.
 // Add more entries here as the other sections get ids.
 const SECTION_IDS = {
   "How It Works": "how-it-works",
+  "For Parents": "for-parents",
+  "Testimonials": "testimonials",
 };
 
 // easeInOutCubic — slow start, fast middle, slow gentle finish.
