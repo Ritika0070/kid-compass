@@ -4,6 +4,7 @@ import cors from "cors";
 import { connectDB } from "./config/db.js";
 import authRoutes from "./routes/auth.routes.js";
 import profileRoutes from "./routes/profile.routes.js";
+import gameRoutes from "./routes/game.routes.js";
 import dns from "node:dns";
 dns.setServers(["8.8.8.8", "1.1.1.1"]);
 
@@ -33,6 +34,7 @@ app.get("/health", (req, res) => {
 
 app.use("/", authRoutes);
 app.use("/profile", profileRoutes);
+app.use("/games", gameRoutes);
 
 const PORT = process.env.PORT || 4000;
 

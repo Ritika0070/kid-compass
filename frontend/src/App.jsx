@@ -28,7 +28,7 @@ function AppRoutes() {
     if (dashboardPage === "Child Profiles") {
       pageContent = <ChildProfiles />;
     } else if (dashboardPage === "Assessments") {
-      pageContent = <Assessments />;
+      pageContent = <Assessments onNavigate={setDashboardPage} />;
     } else if (dashboardPage === "Insights") {
       pageContent = <Insights onNavigate={setDashboardPage} />;
     } else if (dashboardPage === "Settings") {

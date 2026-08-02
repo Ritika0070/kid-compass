@@ -1,7 +1,6 @@
 import { useEffect, useMemo, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useAuth } from "../../hooks/useAuth";
-import { getDifficultyLevel } from "../../utils/difficulty";
 import { saveResult } from "../../utils/results";
 import {
   Brain,
@@ -12,12 +11,20 @@ import {
   Heart,
   ArrowLeft,
   RotateCcw,
+  ArrowRight,
+  Sparkles,
 } from "lucide-react";
 
-const QUESTION_BANK = {
+const LEVEL_META = {
+  Easy: { color: "#16A34A", tint: "#EAF6EE", label: "Level 1 · Easy" },
+  Medium: { color: "#D97706", tint: "#FFF7ED", label: "Level 2 · Medium" },
+  Hard: { color: "#E11D48", tint: "#FFF1F2", label: "Level 3 · Hard" },
+};
+
+const RAW_QUESTIONS = {
   Easy: [
     { prompt: "🍎🍌🍎🍌❓", helper: "What comes next?", options: ["🍎", "🍌", "🍇", "🍊"], answer: "🍎" },
-    { prompt: "🔵🔵🟢🔵🔵🟢❓", helper: "What comes next?", options: ["🟢", "🔵", "🟡", "🟣"], answer: "🔵" },
+    { prompt: "🔵🔵��🔵🔵🟢❓", helper: "What comes next?", options: ["🟢", "🔵", "🟡", "🟣"], answer: "🔵" },
     { prompt: "⭐🌙⭐🌙⭐❓", helper: "What comes next?", options: ["⭐", "🌙", "☀️", "✨"], answer: "🌙" },
     { prompt: "🐶🐱🐶🐱🐶❓", helper: "What comes next?", options: ["🐶", "🐱", "🐭", "🐰"], answer: "🐱" },
     { prompt: "🟥🟨🟥🟨🟥❓", helper: "What comes next?", options: ["🟥", "🟨", "🟩", "🟦"], answer: "🟨" },
@@ -38,47 +45,64 @@ const QUESTION_BANK = {
   ],
 };
 
-function loadChildProfile(email) {
-  try {
-    const raw = localStorage.getItem(`kids-compass-profile-${email || "guest"}`);
-    if (!raw) return { age: null, grade: null };
-    const profile = JSON.parse(raw);
-    return { age: profile.age || null, grade: profile.grade || null };
-  } catch {
-    return { age: null, grade: null };
-  }
-}
+const ALL_QUESTIONS = [
+  ...RAW_QUESTIONS.Easy.map((q) => ({ ...q, level: "Easy" })),
+  ...RAW_QUESTIONS.Medium.map((q) => ({ ...q, level: "Medium" })),
+  ...RAW_QUESTIONS.Hard.map((q) => ({ ...q, level: "Hard" })),
+];
+
+const QUESTIONS_PER_LEVEL = 5;
+const TOTAL_ROUNDS = ALL_QUESTIONS.length;
 
 export default function LogicalGame({ onExit }) {
   const { user } = useAuth();
-  const { age: childAge, grade: childGrade } = loadChildProfile(user?.email);
-  const difficulty = getDifficultyLevel(childAge, childGrade);
-  const questions = useMemo(() => QUESTION_BANK[difficulty], [difficulty]);
 
-  const [stage, setStage] = useState("intro"); // intro | playing | result
+  const [stage, setStage] = useState("intro"); // intro | playing | levelComplete | result
   const [round, setRound] = useState(0);
   const [score, setScore] = useState(0);
+  const [levelScores, setLevelScores] = useState({ Easy: 0, Medium: 0, Hard: 0 });
   const [selected, setSelected] = useState(null);
   const [feedback, setFeedback] = useState(null); // 'correct' | 'wrong' | null
 
-  const current = questions[round];
+  const current = ALL_QUESTIONS[round];
+  const roundInLevel = round % QUESTIONS_PER_LEVEL;
+  const isLastInLevel = roundInLevel === QUESTIONS_PER_LEVEL - 1;
+  const isLastRound = round === TOTAL_ROUNDS - 1;
 
   useEffect(() => {
     if (!feedback) return;
+
     const timer = setTimeout(() => {
-      if (round + 1 < questions.length) {
+      const justCorrect = feedback === "correct";
+
+      if (isLastInLevel) {
+        if (isLastRound) {
+          const finalScore = score + (justCorrect ? 1 : 0);
+          const finalLevelScores = {
+            ...levelScores,
+            [current.level]: levelScores[current.level] + (justCorrect ? 1 : 0),
+          };
+          saveResult(user?.email, "Logical / Analytical", {
+            score: finalScore,
+            total: TOTAL_ROUNDS,
+            levels: finalLevelScores,
+          });
+          setLevelScores(finalLevelScores);
+          setStage("result");
+        } else {
+          setLevelScores((prev) => ({
+            ...prev,
+            [current.level]: prev[current.level] + (justCorrect ? 1 : 0),
+          }));
+          setStage("levelComplete");
+        }
+      } else {
         setRound((r) => r + 1);
         setSelected(null);
         setFeedback(null);
-      } else {
-        saveResult(user?.email, "Logical / Analytical", {
-          score: score + (feedback === "correct" ? 1 : 0),
-          total: questions.length,
-          difficulty,
-        });
-        setStage("result");
       }
     }, 1100);
+
     return () => clearTimeout(timer);
   }, [feedback]);
 
@@ -90,16 +114,21 @@ export default function LogicalGame({ onExit }) {
     setFeedback(isCorrect ? "correct" : "wrong");
   };
 
+  const continueToNextLevel = () => {
+    setRound((r) => r + 1);
+    setSelected(null);
+    setFeedback(null);
+    setStage("playing");
+  };
+
   const restart = () => {
     setStage("intro");
     setRound(0);
     setScore(0);
+    setLevelScores({ Easy: 0, Medium: 0, Hard: 0 });
     setSelected(null);
     setFeedback(null);
   };
-
-  const difficultyTint = { Easy: "#EAF6EE", Medium: "#FFF7ED", Hard: "#FFF1F2" }[difficulty];
-  const difficultyColor = { Easy: "#16A34A", Medium: "#D97706", Hard: "#E11D48" }[difficulty];
 
   if (stage === "intro") {
     return (
@@ -122,21 +151,25 @@ export default function LogicalGame({ onExit }) {
             Logical Detective
           </h1>
           <p className="mt-2 text-sm leading-6 text-[#8A93A1]">
-            Spot the pattern, pick what comes next. {questions.length} quick rounds — no reading required!
+            Spot the pattern, pick what comes next. No reading required!
           </p>
 
-          <span
-            className="mt-5 inline-flex items-center gap-2 rounded-full px-4 py-1.5 text-sm font-black"
-            style={{ backgroundColor: difficultyTint, color: difficultyColor }}
-          >
-            Difficulty: {difficulty}
-          </span>
-
-          {!childAge && !childGrade && (
-            <p className="mt-3 text-xs text-[#9CA3AF]">
-              Add your child's age and class in Child Profiles for a tailored difficulty level.
-            </p>
-          )}
+          <div className="mt-5 flex items-center justify-center gap-2">
+            {["Easy", "Medium", "Hard"].map((level, i) => (
+              <div key={level} className="flex items-center gap-2">
+                <span
+                  className="rounded-full px-3 py-1.5 text-sm font-black"
+                  style={{ backgroundColor: LEVEL_META[level].tint, color: LEVEL_META[level].color }}
+                >
+                  {level}
+                </span>
+                {i < 2 && <ArrowRight size={14} strokeWidth={2.5} className="text-[#D1D5CD]" />}
+              </div>
+            ))}
+          </div>
+          <p className="mt-3 text-xs font-semibold text-[#9CA3AF]">
+            3 levels &middot; 5 rounds each &middot; {TOTAL_ROUNDS} rounds total
+          </p>
 
           <motion.button
             type="button"
@@ -151,11 +184,55 @@ export default function LogicalGame({ onExit }) {
     );
   }
 
+  if (stage === "levelComplete") {
+    const finishedLevel = current.level;
+    const nextLevel = ALL_QUESTIONS[round + 1].level;
+    const finishedScore = levelScores[finishedLevel];
+
+    return (
+      <div className="mx-auto max-w-2xl">
+        <div className="rounded-[32px] border border-[#EEF1EA] bg-white p-8 text-center shadow-[0_18px_50px_rgba(15,23,42,0.05)]">
+          <div
+            className="mx-auto flex h-16 w-16 items-center justify-center rounded-full"
+            style={{ backgroundColor: LEVEL_META[finishedLevel].tint, color: LEVEL_META[finishedLevel].color }}
+          >
+            <Sparkles size={28} strokeWidth={2.25} />
+          </div>
+
+          <h2 className="mt-5 text-2xl font-black text-[#101828]" style={{ fontFamily: "'Baloo 2', cursive" }}>
+            {finishedLevel} level complete!
+          </h2>
+          <p className="mt-2 text-4xl font-black text-[#101828]">
+            {finishedScore}<span className="text-xl text-[#9CA3AF]">/{QUESTIONS_PER_LEVEL}</span>
+          </p>
+
+          <p className="mt-4 text-sm font-bold text-[#8A93A1]">Get ready for</p>
+          <span
+            className="mt-2 inline-block rounded-full px-4 py-1.5 text-sm font-black"
+            style={{ backgroundColor: LEVEL_META[nextLevel].tint, color: LEVEL_META[nextLevel].color }}
+          >
+            {nextLevel} level
+          </span>
+
+          <motion.button
+            type="button"
+            whileTap={{ scale: 0.96 }}
+            onClick={continueToNextLevel}
+            className="mt-7 flex h-14 w-full items-center justify-center gap-2 rounded-2xl bg-[#123524] text-lg font-black text-white transition hover:bg-[#16A34A]"
+          >
+            Continue
+            <ArrowRight size={20} strokeWidth={2.5} />
+          </motion.button>
+        </div>
+      </div>
+    );
+  }
+
   if (stage === "result") {
     const tier =
-      score >= questions.length - 1
+      score >= TOTAL_ROUNDS - 2
         ? { icon: Trophy, color: "#D97706", tint: "#FFF7ED", title: "Amazing! True Logical Detective!" }
-        : score >= Math.ceil(questions.length / 2)
+        : score >= Math.ceil(TOTAL_ROUNDS / 2)
         ? { icon: ThumbsUp, color: "#2563EB", tint: "#EFF6FF", title: "Nice work! Keep practicing." }
         : { icon: Heart, color: "#E11D48", tint: "#FFF1F2", title: "Good try! Practice makes perfect." };
 
@@ -176,9 +253,18 @@ export default function LogicalGame({ onExit }) {
           </h2>
 
           <p className="mt-3 text-5xl font-black text-[#101828]">
-            {score}<span className="text-2xl text-[#9CA3AF]">/{questions.length}</span>
+            {score}<span className="text-2xl text-[#9CA3AF]">/{TOTAL_ROUNDS}</span>
           </p>
-          <p className="mt-1 text-sm font-bold text-[#8A93A1]">Logical / Analytical &middot; {difficulty}</p>
+          <p className="mt-1 text-sm font-bold text-[#8A93A1]">Logical / Analytical</p>
+
+          <div className="mt-6 grid grid-cols-3 gap-2">
+            {["Easy", "Medium", "Hard"].map((level) => (
+              <div key={level} className="rounded-2xl p-3" style={{ backgroundColor: LEVEL_META[level].tint }}>
+                <p className="text-xs font-black" style={{ color: LEVEL_META[level].color }}>{level}</p>
+                <p className="mt-1 text-lg font-black text-[#101828]">{levelScores[level]}/{QUESTIONS_PER_LEVEL}</p>
+              </div>
+            ))}
+          </div>
 
           <div className="mt-8 flex flex-col gap-3 sm:flex-row sm:justify-center">
             <button
@@ -202,6 +288,8 @@ export default function LogicalGame({ onExit }) {
     );
   }
 
+  const level = LEVEL_META[current.level];
+
   return (
     <div className="mx-auto max-w-2xl">
       <div className="mb-4 flex items-center justify-between">
@@ -213,23 +301,27 @@ export default function LogicalGame({ onExit }) {
           <ArrowLeft size={16} strokeWidth={2.25} />
           Exit
         </button>
-        <span className="rounded-full bg-[#EFF6FF] px-3 py-1 text-xs font-black text-[#2563EB]">
-          Score: {score}
+        <span
+          className="rounded-full px-3 py-1 text-xs font-black"
+          style={{ backgroundColor: level.tint, color: level.color }}
+        >
+          {level.label}
         </span>
       </div>
 
       <div className="mb-5 flex gap-2">
-        {questions.map((_, i) => (
+        {Array.from({ length: QUESTIONS_PER_LEVEL }).map((_, i) => (
           <div
             key={i}
-            className={`h-2 flex-1 rounded-full transition ${i <= round ? "bg-[#16A34A]" : "bg-[#EEF1EA]"}`}
+            className="h-2 flex-1 rounded-full transition"
+            style={{ backgroundColor: i <= roundInLevel ? level.color : "#EEF1EA" }}
           />
         ))}
       </div>
 
       <div className="rounded-[32px] border border-[#EEF1EA] bg-white p-8 shadow-[0_18px_50px_rgba(15,23,42,0.05)]">
         <p className="text-center text-xs font-black uppercase tracking-wide text-[#9CA3AF]">
-          Round {round + 1} of {questions.length}
+          Round {roundInLevel + 1} of {QUESTIONS_PER_LEVEL}
         </p>
 
         <AnimatePresence mode="wait">

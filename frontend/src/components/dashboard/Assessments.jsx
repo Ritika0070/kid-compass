@@ -1,4 +1,6 @@
 import { useState } from "react";
+import { useAuth } from "../../hooks/useAuth";
+import { loadProfile, isProfileComplete, getMissingFieldCount } from "../../utils/profileComplete";
 import {
   ClipboardList,
   Puzzle,
@@ -13,6 +15,8 @@ import {
   Compass,
   HeartHandshake,
   Play,
+  Lock,
+  ArrowRight,
 } from "lucide-react";
 import LogicalGame from "../games/LogicalGame";
 
@@ -30,8 +34,13 @@ const domains = [
   { name: "Caregiving / Empathy", color: "#EA580C", icon: HeartHandshake, playable: false },
 ];
 
-export default function Assessments() {
+export default function Assessments({ onNavigate }) {
+  const { user } = useAuth();
   const [activeGame, setActiveGame] = useState(null);
+
+  const profile = loadProfile(user?.email);
+  const profileComplete = isProfileComplete(profile);
+  const missingCount = getMissingFieldCount(profile);
 
   if (activeGame === "Logical / Analytical") {
     return <LogicalGame onExit={() => setActiveGame(null)} />;
@@ -52,6 +61,32 @@ export default function Assessments() {
         </div>
       </section>
 
+      {!profileComplete && (
+        <section className="flex flex-wrap items-center justify-between gap-4 rounded-[28px] border border-[#FDE68A] bg-[#FFFBEB] p-6">
+          <div className="flex items-start gap-3">
+            <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl bg-white text-[#D97706] shadow-sm">
+              <Lock size={20} strokeWidth={2.25} />
+            </div>
+            <div>
+              <p className="font-black text-[#101828]">Complete the child profile to unlock assessments</p>
+              <p className="mt-1 text-sm leading-6 text-[#92702A]">
+                {missingCount} field{missingCount === 1 ? "" : "s"} still missing. Difficulty is
+                tailored using your child's age and class, so the full profile is needed first.
+              </p>
+            </div>
+          </div>
+
+          <button
+            type="button"
+            onClick={() => onNavigate?.("Child Profiles")}
+            className="flex shrink-0 items-center gap-1.5 rounded-xl bg-[#123524] px-5 py-2.5 text-sm font-bold text-white transition hover:bg-[#16A34A]"
+          >
+            Complete profile
+            <ArrowRight size={14} strokeWidth={2.5} />
+          </button>
+        </section>
+      )}
+
       <section className="rounded-[32px] border border-[#EEF1EA] bg-white p-6 shadow-[0_12px_36px_rgba(15,23,42,0.04)]">
         <h2 className="text-2xl font-black text-[#101828]" style={{ fontFamily: "'Baloo 2', cursive" }}>
           Available Assessments
@@ -61,14 +96,17 @@ export default function Assessments() {
         <div className="mt-6 grid gap-3 md:grid-cols-2 xl:grid-cols-3">
           {domains.map((domain) => {
             const Icon = domain.icon;
+            const isUnlocked = domain.playable && profileComplete;
+            const isLockedByProfile = domain.playable && !profileComplete;
+
             return (
               <button
                 key={domain.name}
                 type="button"
-                disabled={!domain.playable}
-                onClick={() => domain.playable && setActiveGame(domain.name)}
+                disabled={!isUnlocked}
+                onClick={() => isUnlocked && setActiveGame(domain.name)}
                 className={`flex items-center gap-3 rounded-3xl border p-5 text-left shadow-[0_6px_18px_rgba(15,23,42,0.03)] transition ${
-                  domain.playable
+                  isUnlocked
                     ? "border-[#EEF1EA] bg-white hover:-translate-y-0.5 hover:shadow-[0_14px_30px_rgba(15,23,42,0.08)]"
                     : "border-[#EEF1EA] bg-white opacity-90"
                 }`}
@@ -81,12 +119,19 @@ export default function Assessments() {
                 </div>
                 <div className="min-w-0 flex-1">
                   <p className="text-sm font-black text-[#101828]">{domain.name}</p>
-                  {domain.playable ? (
+                  {isUnlocked && (
                     <span className="mt-1 inline-flex items-center gap-1 rounded-full bg-[#EAF6EE] px-2.5 py-1 text-xs font-black text-[#15803D]">
                       <Play size={11} strokeWidth={2.5} />
                       Play now
                     </span>
-                  ) : (
+                  )}
+                  {isLockedByProfile && (
+                    <span className="mt-1 inline-flex items-center gap-1 rounded-full bg-[#FFFBEB] px-2.5 py-1 text-xs font-black text-[#B45309]">
+                      <Lock size={11} strokeWidth={2.5} />
+                      Complete profile to unlock
+                    </span>
+                  )}
+                  {!domain.playable && (
                     <span className="mt-1 inline-block rounded-full bg-[#F4F6F0] px-2.5 py-1 text-xs font-black text-[#9CA3AF]">
                       Coming soon
                     </span>
