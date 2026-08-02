@@ -9,6 +9,7 @@ import {
   Settings,
   Menu,
   LogOut,
+  ArrowLeft,
 } from "lucide-react";
 
 const navItems = [
@@ -19,9 +20,14 @@ const navItems = [
   { label: "Settings", icon: Settings },
 ];
 
-function Logo() {
+function Logo({ onClick }) {
   return (
-    <div className="flex items-center gap-3">
+    <button
+      type="button"
+      onClick={onClick}
+      className="flex items-center gap-3 text-left"
+      aria-label="Back to Home Screen"
+    >
       <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-gradient-to-br from-[#16A34A] to-[#15803D] text-white shadow-[0_6px_14px_rgba(22,163,74,0.35)]">
         <Compass size={22} strokeWidth={2.25} />
       </div>
@@ -36,16 +42,27 @@ function Logo() {
           Interest Map
         </p>
       </div>
-    </div>
+    </button>
   );
 }
 
-function Sidebar({ user, logout, activePage, onNavigate, onClose }) {
+function Sidebar({ user, logout, activePage, onNavigate, onClose, onBackToMenu }) {
   return (
     <aside className="flex h-full flex-col bg-white px-6 py-7">
-      <Logo />
+      <Logo onClick={onBackToMenu} />
 
-      <nav className="mt-10 space-y-1.5">
+      {onBackToMenu && (
+        <button
+          type="button"
+          onClick={onBackToMenu}
+          className="mt-6 flex items-center gap-2 rounded-2xl border border-[#EEF1EA] bg-[#FAFBF8] px-4 py-2.5 text-sm font-bold text-[#4B5563] transition hover:bg-[#F7F8F5]"
+        >
+          <ArrowLeft size={16} strokeWidth={2.25} />
+          Back to Home Screen
+        </button>
+      )}
+
+      <nav className="mt-6 space-y-1.5">
         {navItems.map((item) => {
           const Icon = item.icon;
           const isActive = activePage === item.label;
@@ -94,7 +111,7 @@ function Sidebar({ user, logout, activePage, onNavigate, onClose }) {
   );
 }
 
-export default function DashboardLayout({ children, activePage = "Overview", onNavigate }) {
+export default function DashboardLayout({ children, activePage = "Overview", onNavigate, onBackToMenu }) {
   const { logout, user } = useAuth();
   const [sidebarOpen, setSidebarOpen] = useState(true);
 
@@ -118,6 +135,7 @@ export default function DashboardLayout({ children, activePage = "Overview", onN
           activePage={activePage}
           onNavigate={onNavigate}
           onClose={() => setSidebarOpen(false)}
+          onBackToMenu={onBackToMenu}
         />
       </div>
 
