@@ -1,6 +1,6 @@
 // Everything except the optional Support Note and the camera/mic consent
 // toggle must be filled before assessments unlock.
-const REQUIRED_FIELDS = [
+export const REQUIRED_FIELDS = [
   "fullName",
   "preferredName",
   "age",

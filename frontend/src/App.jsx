@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { AnimatePresence } from "framer-motion";
 import { AuthProvider } from "./context/AuthContext";
 import { useAuth } from "./hooks/useAuth";
@@ -17,21 +17,59 @@ function AppRoutes() {
   const [showAuth, setShowAuth] = useState(false);
   // "menu" = the new Main Menu / world screen shown right after login.
   // "dashboard" = the existing sidebar dashboard system, opened from the menu.
-  const [view, setView] = useState("menu");
-  const [dashboardPage, setDashboardPage] = useState("Overview");
+  // Restored from sessionStorage so a page refresh stays where the user was,
+  // instead of always bouncing back to the menu.
+  const [view, setView] = useState(
+    () => sessionStorage.getItem("kc-view") || "menu"
+  );
+  const [dashboardPage, setDashboardPage] = useState(
+    () => sessionStorage.getItem("kc-dashboardPage") || "Overview"
+  );
+  const hasHandledInitialAuth = useRef(false);
 
   useEffect(() => {
+    if (loading) return; // wait for AuthContext to finish restoring the session
+
+    if (!hasHandledInitialAuth.current) {
+      // First run after the session-restore check finishes. If a token was
+      // already present, this is a refresh (not a fresh login) — leave
+      // view/dashboardPage exactly as restored from sessionStorage above,
+      // just make sure any leftover auth modal is closed.
+      hasHandledInitialAuth.current = true;
+      if (isAuthenticated) setShowAuth(false);
+      return;
+    }
+
+    // Any change to isAuthenticated AFTER the initial check is a real
+    // login (or logout) action happening live in this session — that's
+    // when we actually want to jump to the main menu.
     if (isAuthenticated) {
       setShowAuth(false);
       setView("menu");
+      setDashboardPage("Overview");
     }
-  }, [isAuthenticated]);
+  }, [isAuthenticated, loading]);
+
+  useEffect(() => {
+    sessionStorage.setItem("kc-view", view);
+  }, [view]);
+
+  useEffect(() => {
+    sessionStorage.setItem("kc-dashboardPage", dashboardPage);
+  }, [dashboardPage]);
 
   if (loading) return null;
 
   if (isAuthenticated) {
     if (view === "menu") {
-      return <MainMenu onOpenDashboard={() => setView("dashboard")} />;
+      return (
+        <MainMenu
+          onOpenDashboard={(page) => {
+            if (page) setDashboardPage(page);
+            setView("dashboard");
+          }}
+        />
+      );
     }
 
     let pageContent;

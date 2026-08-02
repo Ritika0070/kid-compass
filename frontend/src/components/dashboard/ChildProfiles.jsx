@@ -1,6 +1,8 @@
 import { useEffect, useState } from "react";
 import { useAuth } from "../../hooks/useAuth";
 import { profileApi } from "../../services/api";
+import { REQUIRED_FIELDS } from "../../utils/profileComplete";
+import { mergeBackendProfile } from "../../utils/mergeProfile";
 import {
   User,
   GraduationCap,
@@ -45,10 +47,45 @@ const emptyProfile = {
   consent: false,
 };
 
-const inputClass =
+// Unicode-aware: \p{L} matches letters in any script (Hindi, Arabic,
+// Chinese, accented Latin, etc.), not just A-Z. Requires the "u" flag.
+const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+const NAME_RE = /^[\p{L}][\p{L}\s'.-]{1,49}$/u;
+const FREE_TEXT_RE = /^[\p{L}\p{N}\s,.'-]{2,80}$/u;
+const HOBBIES_RE = /^[\p{L}\p{N}\s,.'-]{2,300}$/u;
+const GRADE_RE = /^[\p{L}\p{N}\s.-]{1,20}$/u;
+const LETTERS_ONLY_RE = /^[\p{L}][\p{L}\s'-]{1,79}$/u;
+const SCHOOL_RE = /^[\p{L}\p{N}\s,.'-]{2,80}$/u;
+const HAS_LETTER_RE = /\p{L}/u;
+
+const FIELD_VALIDATORS = {
+  fullName: { re: NAME_RE, message: "Enter a valid name (letters only)." },
+  preferredName: { re: NAME_RE, message: "Enter a valid name (letters only)." },
+  age: {
+    validate: (v) => Number.isInteger(Number(v)) && Number(v) > 0,
+    message: "Age must be a positive whole number.",
+  },
+  school: {
+    validate: (v) => SCHOOL_RE.test(v) && HAS_LETTER_RE.test(v),
+    message: "Enter a valid school name.",
+  },
+  grade: { re: GRADE_RE, message: "Enter a valid grade/class, e.g. Class 4." },
+  city: { re: NAME_RE, message: "Enter a valid city name (letters only)." },
+  favoriteSubject: { re: LETTERS_ONLY_RE, message: "Enter a valid subject (letters only)." },
+  favoriteActivity: { re: LETTERS_ONLY_RE, message: "Enter a valid activity (letters only)." },
+  hobbies: {
+    validate: (v) => HOBBIES_RE.test(v) && HAS_LETTER_RE.test(v),
+    message: "Enter valid hobbies or interests.",
+  },
+  guardianName: { re: NAME_RE, message: "Enter a valid name (letters only)." },
+  guardianEmail: { re: EMAIL_RE, message: "Enter a valid email address." },
+};
+
+const baseInputClass =
   "h-12 w-full rounded-2xl border border-[#E5E7DF] bg-[#FCFDFB] px-4 text-sm text-[#101828] outline-none transition focus:border-[#16A34A] focus:bg-white focus:ring-4 focus:ring-[#DCEFE1]";
-const textareaClass =
+const baseTextareaClass =
   "min-h-[100px] w-full rounded-2xl border border-[#E5E7DF] bg-[#FCFDFB] px-4 py-3 text-sm text-[#101828] outline-none transition focus:border-[#16A34A] focus:bg-white focus:ring-4 focus:ring-[#DCEFE1]";
+const errorRing = "border-red-500 focus:border-red-500 focus:ring-red-100";
 const labelClass = "mb-2 block text-sm font-bold text-[#344054]";
 
 function SectionCard({ icon: Icon, tint, iconColor, title, subtitle, children }) {
@@ -74,6 +111,11 @@ function SectionCard({ icon: Icon, tint, iconColor, title, subtitle, children })
   );
 }
 
+function FieldError({ message }) {
+  if (!message) return null;
+  return <p className="mt-1 text-xs font-bold text-red-600">{message}</p>;
+}
+
 export default function ChildProfiles() {
   const { user, token } = useAuth();
   const storageKey = `kids-compass-profile-${user?.email || "guest"}`;
@@ -84,6 +126,7 @@ export default function ChildProfiles() {
     guardianEmail: user?.email || "",
   });
 
+  const [errors, setErrors] = useState({});
   const [message, setMessage] = useState("");
   const [error, setError] = useState("");
   const [saving, setSaving] = useState(false);
@@ -91,9 +134,17 @@ export default function ChildProfiles() {
 
   const update = (field, value) => {
     setProfile((current) => ({ ...current, [field]: value }));
+    setErrors((current) => {
+      if (!current[field]) return current;
+      const { [field]: _removed, ...rest } = current;
+      return rest;
+    });
     setMessage("");
     setError("");
   };
+
+  const inputClass = (field) => `${baseInputClass} ${errors[field] ? errorRing : ""}`;
+  const textareaClass = (field) => `${baseTextareaClass} ${errors[field] ? errorRing : ""}`;
 
   useEffect(() => {
     const saved = localStorage.getItem(storageKey);
@@ -109,7 +160,7 @@ export default function ChildProfiles() {
         const data = await profileApi.get(token);
         if (data.profile) {
           setProfile((current) => {
-            const merged = { ...current, ...data.profile };
+            const merged = mergeBackendProfile(current, data.profile);
             localStorage.setItem(storageKey, JSON.stringify(merged));
             return merged;
           });
@@ -122,7 +173,39 @@ export default function ChildProfiles() {
     loadFromDatabase();
   }, [storageKey, token]);
 
+  function validate() {
+    const next = {};
+    for (const field of REQUIRED_FIELDS) {
+      const value = String(profile[field] ?? "").trim();
+
+      if (!value) {
+        next[field] = "This field is required.";
+        continue;
+      }
+
+      const rule = FIELD_VALIDATORS[field];
+      if (rule) {
+        const isValid = rule.validate ? rule.validate(value) : rule.re.test(value);
+        if (!isValid) next[field] = rule.message;
+      }
+    }
+    return next;
+  }
+
   const saveProfile = async () => {
+    const validationErrors = validate();
+    setErrors(validationErrors);
+
+    if (Object.keys(validationErrors).length > 0) {
+      const firstField = REQUIRED_FIELDS.find((f) => validationErrors[f]);
+      const el = document.getElementById(`field-${firstField}`);
+      el?.scrollIntoView({ behavior: "smooth", block: "center" });
+      el?.focus({ preventScroll: true });
+      setMessage("");
+      setError("Please fix the highlighted fields below.");
+      return;
+    }
+
     setSaving(true);
     setMessage("");
     setError("");
@@ -181,24 +264,54 @@ export default function ChildProfiles() {
           >
             <div>
               <label className={labelClass}>Full name</label>
-              <input className={inputClass} placeholder="Example: Riya Sharma" value={profile.fullName} onChange={(e) => update("fullName", e.target.value)} />
+              <input
+                id="field-fullName"
+                className={inputClass("fullName")}
+                placeholder="Example: Riya Sharma"
+                value={profile.fullName}
+                onChange={(e) => update("fullName", e.target.value)}
+              />
+              <FieldError message={errors.fullName} />
             </div>
             <div>
               <label className={labelClass}>Preferred name</label>
-              <input className={inputClass} placeholder="Example: Riya" value={profile.preferredName} onChange={(e) => update("preferredName", e.target.value)} />
+              <input
+                id="field-preferredName"
+                className={inputClass("preferredName")}
+                placeholder="Example: Riya"
+                value={profile.preferredName}
+                onChange={(e) => update("preferredName", e.target.value)}
+              />
+              <FieldError message={errors.preferredName} />
             </div>
             <div>
               <label className={labelClass}>Age</label>
-              <input className={inputClass} type="number" min="4" max="12" placeholder="Age between 4 and 12" value={profile.age} onChange={(e) => update("age", e.target.value)} />
+              <input
+                id="field-age"
+                className={inputClass("age")}
+                type="number"
+                min="1"
+                step="1"
+                placeholder="Enter age"
+                value={profile.age}
+                onChange={(e) => update("age", e.target.value)}
+              />
+              <FieldError message={errors.age} />
             </div>
             <div>
               <label className={labelClass}>Gender</label>
-              <select className={inputClass} value={profile.gender} onChange={(e) => update("gender", e.target.value)}>
+              <select
+                id="field-gender"
+                className={inputClass("gender")}
+                value={profile.gender}
+                onChange={(e) => update("gender", e.target.value)}
+              >
                 <option value="">Select</option>
                 <option value="Boy">Boy</option>
                 <option value="Girl">Girl</option>
                 <option value="Prefer not to say">Prefer not to say</option>
               </select>
+              <FieldError message={errors.gender} />
             </div>
           </SectionCard>
 
@@ -211,24 +324,51 @@ export default function ChildProfiles() {
           >
             <div>
               <label className={labelClass}><School size={13} className="mr-1 -mt-0.5 inline" strokeWidth={2.25} />School name</label>
-              <input className={inputClass} placeholder="Example: Green Valley School" value={profile.school} onChange={(e) => update("school", e.target.value)} />
+              <input
+                id="field-school"
+                className={inputClass("school")}
+                placeholder="Example: Green Valley School"
+                value={profile.school}
+                onChange={(e) => update("school", e.target.value)}
+              />
+              <FieldError message={errors.school} />
             </div>
             <div>
               <label className={labelClass}>Grade / Class</label>
-              <input className={inputClass} placeholder="Example: Class 4" value={profile.grade} onChange={(e) => update("grade", e.target.value)} />
+              <input
+                id="field-grade"
+                className={inputClass("grade")}
+                placeholder="Example: Class 4"
+                value={profile.grade}
+                onChange={(e) => update("grade", e.target.value)}
+              />
+              <FieldError message={errors.grade} />
             </div>
             <div>
               <label className={labelClass}><MapPin size={13} className="mr-1 -mt-0.5 inline" strokeWidth={2.25} />City</label>
-              <input className={inputClass} placeholder="Example: Delhi" value={profile.city} onChange={(e) => update("city", e.target.value)} />
+              <input
+                id="field-city"
+                className={inputClass("city")}
+                placeholder="Example: Delhi"
+                value={profile.city}
+                onChange={(e) => update("city", e.target.value)}
+              />
+              <FieldError message={errors.city} />
             </div>
             <div>
               <label className={labelClass}><Languages size={13} className="mr-1 -mt-0.5 inline" strokeWidth={2.25} />Preferred language</label>
-              <select className={inputClass} value={profile.language} onChange={(e) => update("language", e.target.value)}>
+              <select
+                id="field-language"
+                className={inputClass("language")}
+                value={profile.language}
+                onChange={(e) => update("language", e.target.value)}
+              >
                 <option value="">Select</option>
                 <option value="English">English</option>
                 <option value="Hindi">Hindi</option>
                 <option value="Other">Other</option>
               </select>
+              <FieldError message={errors.language} />
             </div>
           </SectionCard>
 
@@ -241,15 +381,36 @@ export default function ChildProfiles() {
           >
             <div>
               <label className={labelClass}>Favorite subject</label>
-              <input className={inputClass} placeholder="Example: Art, Maths, English" value={profile.favoriteSubject} onChange={(e) => update("favoriteSubject", e.target.value)} />
+              <input
+                id="field-favoriteSubject"
+                className={inputClass("favoriteSubject")}
+                placeholder="Example: Art, Maths, English"
+                value={profile.favoriteSubject}
+                onChange={(e) => update("favoriteSubject", e.target.value)}
+              />
+              <FieldError message={errors.favoriteSubject} />
             </div>
             <div>
               <label className={labelClass}>Favorite activity</label>
-              <input className={inputClass} placeholder="Example: drawing, football, stories" value={profile.favoriteActivity} onChange={(e) => update("favoriteActivity", e.target.value)} />
+              <input
+                id="field-favoriteActivity"
+                className={inputClass("favoriteActivity")}
+                placeholder="Example: drawing, football, stories"
+                value={profile.favoriteActivity}
+                onChange={(e) => update("favoriteActivity", e.target.value)}
+              />
+              <FieldError message={errors.favoriteActivity} />
             </div>
             <div className="md:col-span-2">
               <label className={labelClass}>Hobbies or interests</label>
-              <textarea className={textareaClass} placeholder="Example: drawing, dancing, puzzles, music..." value={profile.hobbies} onChange={(e) => update("hobbies", e.target.value)} />
+              <textarea
+                id="field-hobbies"
+                className={textareaClass("hobbies")}
+                placeholder="Example: drawing, dancing, puzzles, music..."
+                value={profile.hobbies}
+                onChange={(e) => update("hobbies", e.target.value)}
+              />
+              <FieldError message={errors.hobbies} />
             </div>
           </SectionCard>
 
@@ -262,21 +423,42 @@ export default function ChildProfiles() {
           >
             <div>
               <label className={labelClass}>Guardian name</label>
-              <input className={inputClass} placeholder="Example: Mother / Father name" value={profile.guardianName} onChange={(e) => update("guardianName", e.target.value)} />
+              <input
+                id="field-guardianName"
+                className={inputClass("guardianName")}
+                placeholder="Example: Mother / Father name"
+                value={profile.guardianName}
+                onChange={(e) => update("guardianName", e.target.value)}
+              />
+              <FieldError message={errors.guardianName} />
             </div>
             <div>
               <label className={labelClass}>Relation</label>
-              <select className={inputClass} value={profile.guardianRelation} onChange={(e) => update("guardianRelation", e.target.value)}>
+              <select
+                id="field-guardianRelation"
+                className={inputClass("guardianRelation")}
+                value={profile.guardianRelation}
+                onChange={(e) => update("guardianRelation", e.target.value)}
+              >
                 <option value="">Select</option>
                 <option value="Mother">Mother</option>
                 <option value="Father">Father</option>
                 <option value="Guardian">Guardian</option>
                 <option value="Other">Other</option>
               </select>
+              <FieldError message={errors.guardianRelation} />
             </div>
             <div className="md:col-span-2">
               <label className={labelClass}><Mail size={13} className="mr-1 -mt-0.5 inline" strokeWidth={2.25} />Guardian email</label>
-              <input className={inputClass} type="email" placeholder="you@example.com" value={profile.guardianEmail} onChange={(e) => update("guardianEmail", e.target.value)} />
+              <input
+                id="field-guardianEmail"
+                className={inputClass("guardianEmail")}
+                type="email"
+                placeholder="you@example.com"
+                value={profile.guardianEmail}
+                onChange={(e) => update("guardianEmail", e.target.value)}
+              />
+              <FieldError message={errors.guardianEmail} />
             </div>
           </SectionCard>
 
@@ -288,7 +470,12 @@ export default function ChildProfiles() {
             subtitle="Anything we should be mindful of"
           >
             <div className="md:col-span-2">
-              <textarea className={textareaClass} placeholder="Anything parent/guardian wants us to keep in mind..." value={profile.supportNote} onChange={(e) => update("supportNote", e.target.value)} />
+              <textarea
+                className={baseTextareaClass}
+                placeholder="Anything parent/guardian wants us to keep in mind..."
+                value={profile.supportNote}
+                onChange={(e) => update("supportNote", e.target.value)}
+              />
             </div>
           </SectionCard>
         </div>

@@ -1,85 +1,16 @@
 import { useState, useEffect, useLayoutEffect, useRef } from "react";
 import { motion, useAnimation } from "framer-motion";
+import { useAuth } from "../../hooks/useAuth";
+import { profileApi } from "../../services/api";
+import { loadProfile, isProfileComplete } from "../../utils/profileComplete";
+import ProfileReminderBunny from "./ProfileReminderBunny";
+import { mergeBackendProfile } from "../../utils/mergeProfile";
 
-/**
- * MainMenu — Coral Island / Kid Compass main menu
- * -------------------------------------------------
- * Mobile layout (flex md:hidden): now also shows the island panel
- * (see "island overlay panel" section below) — it was previously
- * desktop-only and just didn't render on small screens at all.
- *
- * Desktop layout (hidden md:block): no JS scaling — pure CSS using
- * container query width units (cqw). `cqw` is always "1% of the
- * container's width", applied consistently no matter which property
- * it's on (left, bottom, width, border-radius, font-size...). That
- * gives two things at once:
- *   1. Everything scales together as the window resizes (cqw(29) is
- *      always 29px at exactly 1366px wide, and grows/shrinks from
- *      there in lockstep with every other cqw value).
- *   2. Elements stay pinned to the actual edge they're meant to sit
- *      on — sidebar/logo via `left`/`top`, cards via `bottom` — so
- *      nothing floats in empty space in the middle of a tall window.
- * The container just needs `container-type: inline-size` so cqw
- * resolves against it.
- *
- * cqw(px) = px / 1366 * 100 — 1366 is the Figma frame width, so at
- * exactly 1366px viewport width every value below is pixel-identical
- * to the Figma inspector numbers.
- *
- * ---- island overlay panel (two-panel pager, button-nav) ----
- * PANEL_INSET_TOP / _BOTTOM / _LEFT / _RIGHT below are the exact
- * offsets the panel sits at, pulled out as named consts so you can
- * tweak them directly instead of hunting through JSX. These are all
- * cqw() so they're %-based, not fixed px — same values automatically
- * shrink-to-fit on mobile because the mobile copy of this panel sits
- * inside its own small containerType:inline-size box (see
- * PANEL_INSET_MOBILE_* below), so the same cqw() output resolves
- * against the phone-width container instead of the 1366 desktop one.
- *
- * FIX for the "island gets cut off at the top" bug: islands are
- * absolutely positioned by top/left % and their badge+art+label
- * stack extends a bit above/below that anchor point. When the panel
- * itself is short, an island anchored near 0%/100% can poke outside
- * the overflow-hidden clipping box and get sliced. Fixed by adding an
- * inner "safe field" div (PANEL_SAFE_PAD_X/Y) inset from the panel's
- * own edges — island % positions resolve against that smaller inner
- * box, so there's a buffer before the real clip edge.
- *
- * DEBUG_PANEL is now off — flip back to true any time you need to see
- * the panel/safe-field outlines again while tweaking insets.
- *
- * ---- mobile island sizing/positioning ----
- * Desktop and mobile carry fully independent size/position numbers
- * (`size`/`top`/`left` for desktop, `mobileSize`/`mobileTop`/
- * `mobileLeft` or `mobileRight` for mobile), each scaled by its own
- * cqw()/cqwMobile() function.
- *
- * `mobileRight` (NEW) is supported as an alternative to `mobileLeft`
- * for islands that read more naturally anchored from the right edge
- * — set one or the other, not both.
- *
- * IMPORTANT — flexShrink:0 on island artwork (NEW):
- * Each island's wrapper <div> has no explicit width, so an absolutely
- * positioned box with an anchor close to the container's edge (e.g.
- * left:"84%") only has a small "available space" gap for the browser
- * to shrink-to-fit that wrapper into. Since the wrapper is a flex
- * container and the <img>/placeholder inside it is a flex item with
- * the default flexShrink:1, that image would get visually squeezed
- * smaller than its own explicit width/height whenever it's anchored
- * close to an edge — even though width/height never changed. Adding
- * flexShrink:0 on the artwork stops it from obeying that squeeze, so
- * islands always render at their declared size regardless of how
- * close to the edge left/right anchors sit.
- */
 
 const DESIGN_W = 1366;
 const cqw = (px) => `${((px / DESIGN_W) * 100).toFixed(4)}cqw`;
 
-// Mobile gets its OWN reference width and its OWN scale function —
-// completely independent of desktop's cqw()/DESIGN_W. 390 is a
-// typical phone viewport width, so a mobileSize like {w:130,h:110}
-// below reads as roughly "130px on a 390px-wide phone" rather than
-// being derived from the desktop pixel numbers at all.
+
 const MOBILE_DESIGN_W = 390;
 const cqwMobile = (px) => `${((px / MOBILE_DESIGN_W) * 100).toFixed(4)}cqw`;
 
@@ -130,15 +61,7 @@ const CORNER_DECOR = {
   bottomRight: { w: 440, h: 292, src: "mainmenu/decor-branch-bottom-right.png" },
 };
 
-// ---- island data ----
-// Panel 1 is just the 4 real islands (the 5th "Mystery Isle" had no
-// artwork, so it's dropped for now — add it back once there's an
-// asset for it). Panel 2 is still untouched placeholder blobs.
-//
-// Every island carries TWO fully independent sets of numbers:
-//   desktop: `size` (w/h) + `top`/`left`      — scaled with cqw()
-//   mobile:  `mobileSize` (w/h) + `mobileTop`/`mobileLeft` (or
-//            `mobileRight`) — scaled with cqwMobile()
+
 const ISLAND_PANELS = [
   [
     { id: 1, title: "Welcome", locked: false,
@@ -327,11 +250,7 @@ function PagerArrow({ direction, onClick, disabled }) {
   );
 }
 
-// insetTop/Bottom/Left/Right let desktop and mobile pass different
-// offsets while reusing the same panel + island data + safe-area fix.
-// onActiveIndexChange is optional — desktop passes it so MainMenu can
-// drive the corner decor animation off the same index; mobile doesn't
-// pass it, so it's simply unused there.
+
 function IslandMapPager({
   insetTop = PANEL_INSET_TOP,
   insetBottom = PANEL_INSET_BOTTOM,
@@ -789,8 +708,49 @@ function ProfilePill({ name, level, stars, avatarId, mobile = false }) {
 }
 
 export default function MainMenu({ onOpenDashboard }) {
+  const { user, token } = useAuth();
   const [activeNav, setActiveNav] = useState("home");
   const [desktopIslandIndex, setDesktopIslandIndex] = useState(0);
+  const [profileReady, setProfileReady] = useState(false);
+  const [profileOk, setProfileOk] = useState(false);
+useEffect(() => {
+     let cancelled = false;
+
+     async function checkProfile() {
+       // start from whatever's cached locally (fast, works offline)
+       let profile = loadProfile(user?.email);
+
+       // then reconcile with the backend — this is what makes a fresh
+       // login / refresh / logout-then-login always re-check correctly,
+       // even on a device that never had this profile cached before
+       if (token) {
+         try {
+           const data = await profileApi.get(token);
+           if (data?.profile) {
+             profile = mergeBackendProfile(profile || {}, data.profile);
+             localStorage.setItem(
+               `kids-compass-profile-${user?.email || "guest"}`,
+               JSON.stringify(profile)
+             );
+           }
+         } catch {
+           // backend unreachable — fall back to whatever's cached locally
+         }
+       }
+
+       if (!cancelled) {
+         setProfileOk(isProfileComplete(profile));
+         setProfileReady(true);
+       }
+     }
+
+     checkProfile();
+     return () => {
+       cancelled = true;
+     };
+   }, [user, token]);
+
+   if (!profileReady) return null; // or a small splash/spinner if you have one
 
   return (
     <div className="relative w-full h-screen overflow-hidden" style={{ backgroundColor: "#4f6b3a" }}>
@@ -799,6 +759,9 @@ export default function MainMenu({ onOpenDashboard }) {
         alt=""
         className="absolute inset-0 w-full h-full object-cover"
       />
+      {!profileOk && (
+              <ProfileReminderBunny onGoToProfile={() => onOpenDashboard("Child Profiles")} />
+      )}
 
       {/* ===========================
             Desktop

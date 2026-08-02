@@ -28,6 +28,8 @@ export function AuthProvider({ children }) {
   const logout = () => {
     localStorage.removeItem("token");
     localStorage.removeItem("user");
+    sessionStorage.removeItem("kc-view");
+    sessionStorage.removeItem("kc-dashboardPage");
     setToken(null);
     setUser(null);
   };
