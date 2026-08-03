@@ -2,7 +2,6 @@ import { useEffect, useState } from "react";
 import { useAuth } from "../../hooks/useAuth";
 import { profileApi } from "../../services/api";
 import { REQUIRED_FIELDS } from "../../utils/profileComplete";
-import { mergeBackendProfile } from "../../utils/mergeProfile";
 import {
   User,
   GraduationCap,
@@ -51,16 +50,19 @@ const emptyProfile = {
 // Chinese, accented Latin, etc.), not just A-Z. Requires the "u" flag.
 const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 const NAME_RE = /^[\p{L}][\p{L}\s'.-]{1,49}$/u;
-const FREE_TEXT_RE = /^[\p{L}\p{N}\s,.'-]{2,80}$/u;
-const HOBBIES_RE = /^[\p{L}\p{N}\s,.'-]{2,300}$/u;
-const GRADE_RE = /^[\p{L}\p{N}\s.-]{1,20}$/u;
+const PREFERRED_NAME_RE = /^[\p{L}][\p{L}\s'.-]{0,7}$/u; // 1–8 characters total, shown on the main menu
 const LETTERS_ONLY_RE = /^[\p{L}][\p{L}\s'-]{1,79}$/u;
 const SCHOOL_RE = /^[\p{L}\p{N}\s,.'-]{2,80}$/u;
 const HAS_LETTER_RE = /\p{L}/u;
+const HOBBIES_RE = /^[\p{L}\p{N}\s,.'-]{2,300}$/u;
+const GRADE_RE = /^[\p{L}\p{N}\s.-]{1,20}$/u;
 
 const FIELD_VALIDATORS = {
   fullName: { re: NAME_RE, message: "Enter a valid name (letters only)." },
-  preferredName: { re: NAME_RE, message: "Enter a valid name (letters only)." },
+  preferredName: {
+    re: PREFERRED_NAME_RE,
+    message: "Preferred name must be 1–8 letters (shown on the main menu).",
+  },
   age: {
     validate: (v) => Number.isInteger(Number(v)) && Number(v) > 0,
     message: "Age must be a positive whole number.",
@@ -160,7 +162,7 @@ export default function ChildProfiles() {
         const data = await profileApi.get(token);
         if (data.profile) {
           setProfile((current) => {
-            const merged = mergeBackendProfile(current, data.profile);
+            const merged = { ...current, ...data.profile };
             localStorage.setItem(storageKey, JSON.stringify(merged));
             return merged;
           });
@@ -277,6 +279,7 @@ export default function ChildProfiles() {
               <label className={labelClass}>Preferred name</label>
               <input
                 id="field-preferredName"
+                maxLength={8}
                 className={inputClass("preferredName")}
                 placeholder="Example: Riya"
                 value={profile.preferredName}
